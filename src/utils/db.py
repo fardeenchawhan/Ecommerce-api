@@ -4,7 +4,7 @@ from src.utils.settings import settings
 
 engine=create_engine(settings.DB_CONNECTION)
 
-SessionLocal=sessionmaker(autocommit=False,autoflash=False,bind=engine)
+SessionLocal=sessionmaker(bind=engine,autocommit=False,autoflush=False)
 
 class Base(DeclarativeBase):
     pass
