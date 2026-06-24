@@ -15,9 +15,18 @@ from src.category.router import category_routes
 from src.product.router import product_routes
 from src.cart.router import cart_routes
 from src.order.router import order_routes
+from contextlib import asynccontextmanager
+from src.user.controller import create_admin_if_not_exists
 
 
 Base.metadata.create_all(bind=engine)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_admin_if_not_exists()
+    yield
+
 
 app = FastAPI(
     title="E-Commerce API",
@@ -31,7 +40,8 @@ app = FastAPI(
     - Cart Management
     - Order Management
     """,
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.include_router(auth_routes)

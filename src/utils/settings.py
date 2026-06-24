@@ -6,6 +6,11 @@ class Settings(BaseSettings):
     ALGORITHM: str
     EXPIRY_TIME: int
 
+    ADMIN_NAME: str
+    ADMIN_USERNAME: str
+    ADMIN_EMAIL: str
+    ADMIN_PASSWORD: str
+
     model_config=SettingsConfigDict(env_file=".env",extra="ignore")
 
 settings=Settings()
