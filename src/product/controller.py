@@ -99,3 +99,88 @@ def get_one_product(
         )
 
     return product
+
+
+def update_product(
+    product_id: int,
+    body: ProductUpdateSchema,
+    db: Session
+):
+
+    product = db.get(ProductModel, product_id)
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    if not product.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    data = body.model_dump(exclude_unset=True)
+
+    # validate category
+    if "category_id" in data:
+
+        category = db.get(CategoryModel, data["category_id"])
+
+        if not category:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Category not found"
+            )
+
+    # duplicate product name check
+    if "name" in data:
+
+        existing = db.execute(
+            select(ProductModel).where(
+                ProductModel.name == data["name"],
+                ProductModel.id != product_id
+            )
+        ).scalar_one_or_none()
+
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Product already exists"
+            )
+
+    for field, value in data.items():
+        setattr(product, field, value)
+
+    db.commit()
+    db.refresh(product)
+
+    return product
+
+
+
+def delete_product(
+    product_id: int,
+    db: Session
+):
+
+    product = db.get(ProductModel, product_id)
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    if not product.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product already deleted"
+        )
+
+    product.is_active = False
+
+    db.commit()
+
+    return None

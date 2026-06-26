@@ -71,3 +71,48 @@ async def get_one_product(
     db: Session = Depends(get_db)
 ):
     return controller.get_one_product(product_id, db)
+
+
+
+@product_routes.put(
+    "/{product_id}",
+    response_model=ProductResponseSchema,
+    summary="Update Product"
+)
+async def update_product(
+
+    product_id: int,
+
+    body: ProductUpdateSchema,
+
+    db: Session = Depends(get_db),
+
+    current_user: Usermodel = Depends(get_current_admin)
+
+):
+    return controller.update_product(
+        product_id,
+        body,
+        db
+    )
+
+
+
+@product_routes.delete(
+    "/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Product"
+)
+async def delete_product(
+
+    product_id: int,
+
+    db: Session = Depends(get_db),
+
+    current_user: Usermodel = Depends(get_current_admin)
+
+):
+    return controller.delete_product(
+        product_id,
+        db
+    )
