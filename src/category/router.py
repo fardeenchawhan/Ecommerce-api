@@ -10,7 +10,7 @@ from src.category.ditos import (
     CategoryResponseSchema
 )
 from src.utils.db import get_db
-from src.utils.helpers import get_current_user
+from src.utils.helpers import get_current_user,get_current_admin
 from src.user.models import Usermodel
 
 
@@ -30,9 +30,10 @@ category_routes = APIRouter(
 async def create_category(
     body: CategoryCreateSchema,
     db: Session = Depends(get_db),
-    current_user: Usermodel = Depends(get_current_user)
+    current_user: Usermodel = Depends(get_current_user),
+    current_admin: Usermodel = Depends(get_current_admin)
 ):
-    return controller.create_category(body, db, current_user)
+    return controller.create_category(body, db, current_user,current_admin)
 
 
 @category_routes.get(
@@ -73,9 +74,10 @@ async def update_category(
     category_id: int,
     body: CategoryUpdateSchema,
     db: Session = Depends(get_db),
-    current_user: Usermodel = Depends(get_current_user)
+    current_user: Usermodel = Depends(get_current_user),
+    current_admin: Usermodel = Depends(get_current_admin)
 ):
-    return controller.update_category(category_id, body, db, current_user)
+    return controller.update_category(category_id, body, db, current_user,current_admin)
 
 
 @category_routes.delete(
@@ -87,7 +89,8 @@ async def update_category(
 async def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user: Usermodel = Depends(get_current_user)
+    current_user: Usermodel = Depends(get_current_user),
+    current_admin: Usermodel = Depends(get_current_admin)
 ):
-    return controller.delete_category(category_id, db, current_user)
+    return controller.delete_category(category_id, db, current_user,current_admin)
 

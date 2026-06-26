@@ -10,13 +10,9 @@ from src.user.models import Usermodel
 def create_category(
     body: CategoryCreateSchema,
     db: Session,
-    current_user: Usermodel
+    current_user: Usermodel,
+    current_admin:Usermodel
 ):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can create categories"
-        )
 
     existing_category = db.execute(
         select(CategoryModel).where(CategoryModel.name == body.name)
@@ -59,13 +55,10 @@ def update_category(
     category_id: int,
     body: CategoryUpdateSchema,
     db: Session,
-    current_user: Usermodel
+    current_user: Usermodel,
+    current_admin:Usermodel
 ):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can update categories"
-        )
+
 
     category = db.get(CategoryModel, category_id)
 
@@ -103,13 +96,9 @@ def update_category(
 def delete_category(
     category_id: int,
     db: Session,
-    current_user: Usermodel
+    current_user: Usermodel,
+    current_admin:Usermodel
 ):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can delete categories"
-        )
 
     category = db.get(CategoryModel, category_id)
 
