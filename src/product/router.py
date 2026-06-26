@@ -2,12 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+from src.utils.schemas import PaginatedResponse
 
 from src.product import controller
 from src.product.ditos import (
     ProductCreateSchema,
     ProductUpdateSchema,
-    ProductResponseSchema
+    ProductResponseSchema,
 )
 from src.utils.db import get_db
 from src.utils.helpers import get_current_admin
@@ -48,13 +49,41 @@ async def create_product(
 
 @product_routes.get(
     "",
-    response_model=List[ProductResponseSchema],
+    response_model=PaginatedResponse[ProductResponseSchema],
     summary="Get All Products"
 )
 async def get_all_products(
+
+    page: int = 1,
+    limit: int = 10,
+
+    search: str | None = None,
+
+    category_id: int | None = None,
+
+    min_price: float | None = None,
+
+    max_price: float | None = None,
+
+    in_stock: bool | None = None,
+
+    sort: str | None = None,
+
     db: Session = Depends(get_db)
+
 ):
-    return controller.get_all_products(db)
+
+    return controller.get_all_products(
+        db=db,
+        page=page,
+        limit=limit,
+        search=search,
+        category_id=category_id,
+        min_price=min_price,
+        max_price=max_price,
+        in_stock=in_stock,
+        sort=sort
+    )
 
 
 # -------------------------

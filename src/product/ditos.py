@@ -1,14 +1,22 @@
 from decimal import Decimal
 from datetime import datetime
 from typing import Optional
+from typing import List
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict,Field
 
 
 class ProductCreateSchema(BaseModel):
     name: str
     description: Optional[str] = None
-    price: Decimal
+    price: Decimal = Field(
+    ...,
+    gt=0,
+    max_digits=10,
+    decimal_places=2,
+    examples=[999.99],
+    description="Product price"
+)
     stock: int
     image_url: Optional[str] = None
     category_id: int
@@ -28,7 +36,14 @@ class ProductResponseSchema(BaseModel):
     id: int
     name: str
     description: Optional[str]
-    price: Decimal
+    price: Decimal = Field(
+    ...,
+    gt=0,
+    max_digits=10,
+    decimal_places=2,
+    examples=[999.99],
+    description="Product price"
+)
     stock: int
     image_url: Optional[str]
     is_active: bool
@@ -37,3 +52,12 @@ class ProductResponseSchema(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+
+class ProductListResponseSchema(BaseModel):
+    items: List[ProductResponseSchema]
+    page: int
+    limit: int
+    total: int
+    total_pages: int

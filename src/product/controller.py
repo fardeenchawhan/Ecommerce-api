@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 from fastapi import HTTPException, status
-
+from sqlalchemy import select, asc, desc,func
+from src.utils.pagination import paginate
 from src.product.models import ProductModel
 from src.product.ditos import (
     ProductCreateSchema,
@@ -64,15 +64,91 @@ def create_product(
 # Get All Products
 # -------------------------
 
-def get_all_products(db: Session):
 
-    products = db.execute(
-        select(ProductModel).where(
-            ProductModel.is_active == True
+
+def get_all_products(
+    db: Session,
+    page: int,
+    limit: int,
+    search: str | None,
+    category_id: int | None,
+    min_price: float | None,
+    max_price: float | None,
+    in_stock: bool | None,
+    sort: str | None
+):
+
+    query = select(ProductModel).where(
+        ProductModel.is_active == True
+    )
+
+    # ----------------------------
+    # Search
+    # ----------------------------
+
+    if search:
+        query = query.where(
+            ProductModel.name.ilike(f"%{search}%")
         )
-    ).scalars().all()
 
-    return products
+    # ----------------------------
+    # Category Filter
+    # ----------------------------
+
+    if category_id:
+        query = query.where(
+            ProductModel.category_id == category_id
+        )
+
+    # ----------------------------
+    # Price Filter
+    # ----------------------------
+
+    if min_price is not None:
+        query = query.where(
+            ProductModel.price >= min_price
+        )
+
+    if max_price is not None:
+        query = query.where(
+            ProductModel.price <= max_price
+        )
+
+    # ----------------------------
+    # Stock Filter
+    # ----------------------------
+
+    if in_stock:
+        query = query.where(
+            ProductModel.stock > 0
+        )
+
+    # ----------------------------
+    # Sorting
+    # ----------------------------
+
+    if sort == "price_low":
+        query = query.order_by(asc(ProductModel.price))
+
+    elif sort == "price_high":
+        query = query.order_by(desc(ProductModel.price))
+
+    elif sort == "oldest":
+        query = query.order_by(asc(ProductModel.created_at))
+
+    else:
+        query = query.order_by(desc(ProductModel.created_at))
+
+    # ----------------------------
+    # Total Count
+    # ----------------------------
+
+    return paginate(
+    db=db,
+    query=query,
+    page=page,
+    limit=limit
+)
 
 
 # -------------------------
