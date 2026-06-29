@@ -1,15 +1,14 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status,Query
 from sqlalchemy.orm import Session
 from src.utils.schemas import PaginatedResponse
+from src.product.enums import ProductSortEnum
+from decimal import Decimal
+
 
 from src.product import controller
-from src.product.ditos import (
-    ProductCreateSchema,
-    ProductUpdateSchema,
-    ProductResponseSchema,
-)
+from src.product.ditos import ( ProductCreateSchema,ProductUpdateSchema,ProductResponseSchema,)
 from src.utils.db import get_db
 from src.utils.helpers import get_current_admin
 from src.user.models import Usermodel
@@ -50,39 +49,29 @@ async def create_product(
 @product_routes.get(
     "",
     response_model=PaginatedResponse[ProductResponseSchema],
-    summary="Get All Products"
+    summary="Get all products"
 )
 async def get_all_products(
-
-    page: int = 1,
-    limit: int = 10,
-
-    search: str | None = None,
-
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     category_id: int | None = None,
-
-    min_price: float | None = None,
-
-    max_price: float | None = None,
-
+    search: str | None = None,
+    min_price: Decimal | None = Query(None, ge=0),
+    max_price: Decimal | None = Query(None, ge=0),
     in_stock: bool | None = None,
-
-    sort: str | None = None,
-
-    db: Session = Depends(get_db)
-
+    sort: ProductSortEnum = ProductSortEnum.newest,
+    db: Session = Depends(get_db),
 ):
-
     return controller.get_all_products(
         db=db,
         page=page,
         limit=limit,
-        search=search,
         category_id=category_id,
+        search=search,
         min_price=min_price,
         max_price=max_price,
         in_stock=in_stock,
-        sort=sort
+        sort=sort,
     )
 
 

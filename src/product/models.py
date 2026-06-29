@@ -14,10 +14,13 @@ class ProductModel(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2),nullable=False)
     stock: Mapped[int] = mapped_column(default=0)
+    brand: Mapped[Optional[str]] = mapped_column(String(100),nullable=True,index=True)
+
+    sku: Mapped[str] = mapped_column(String(100),unique=True,nullable=False,index=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True ,nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(), onupdate=func.now(),nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now(),nullable=False)
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
 

@@ -19,8 +19,6 @@ from contextlib import asynccontextmanager
 from src.user.controller import create_admin_if_not_exists
 
 
-Base.metadata.create_all(bind=engine)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

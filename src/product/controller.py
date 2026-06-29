@@ -1,108 +1,80 @@
-from sqlalchemy.orm import Session
+
+from decimal import Decimal
+from src.product.enums import ProductSortEnum
+
 from fastapi import HTTPException, status
-from sqlalchemy import select, asc, desc,func
-from src.utils.pagination import paginate
-from src.product.models import ProductModel
-from src.product.ditos import (
-    ProductCreateSchema,
-    ProductUpdateSchema
-)
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
+
 from src.category.models import CategoryModel
+from src.product.ditos import ProductCreateSchema, ProductUpdateSchema
+from src.product.models import ProductModel
+from src.user.models import Usermodel
+from src.utils.pagination import paginate
 
-
-# -------------------------
-# Create Product
-# -------------------------
 
 def create_product(
     body: ProductCreateSchema,
     db: Session,
+    current_user: Usermodel,
 ):
-    # check category exists
-    category = db.execute(
-        select(CategoryModel).where(
-            CategoryModel.id == body.category_id
+    existing_sku = db.execute(
+            select(ProductModel).where(
+                ProductModel.sku == body.sku
+            )
+        ).scalar_one_or_none()
+
+    if existing_sku:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="SKU already exists."
         )
-    ).scalar_one_or_none()
+
+    category = db.get(CategoryModel, body.category_id)
 
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
+            detail="Category not found."
         )
 
-    # check duplicate product name
-    existing_product = db.execute(
-        select(ProductModel).where(
-            ProductModel.name == body.name
-        )
-    ).scalar_one_or_none()
+    product = ProductModel(**body.model_dump())
 
-    if existing_product:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Product already exists"
-        )
-
-    new_product = ProductModel(
-        name=body.name,
-        description=body.description,
-        price=body.price,
-        stock=body.stock,
-        image_url=body.image_url,
-        category_id=body.category_id
-    )
-
-    db.add(new_product)
+    db.add(product)
     db.commit()
-    db.refresh(new_product)
+    db.refresh(product)
 
-    return new_product
-
-
-# -------------------------
-# Get All Products
-# -------------------------
-
+    return product
 
 
 def get_all_products(
     db: Session,
-    page: int,
-    limit: int,
-    search: str | None,
-    category_id: int | None,
-    min_price: float | None,
-    max_price: float | None,
-    in_stock: bool | None,
-    sort: str | None
+    page: int = 1,
+    limit: int = 10,
+    category_id: int | None = None,
+    search: str | None = None,
+    min_price: Decimal | None = None,
+    max_price: Decimal | None = None,
+    in_stock: bool | None = None,
+    sort: ProductSortEnum = ProductSortEnum.newest,
 ):
-
-    query = select(ProductModel).where(
-        ProductModel.is_active == True
+    query = (
+        select(ProductModel)
+        .options(
+            selectinload(ProductModel.category)
+        )
+        .where(ProductModel.is_active == True)
     )
 
-    # ----------------------------
-    # Search
-    # ----------------------------
+    if category_id is not None:
+        query = query.where(
+            ProductModel.category_id == category_id
+        )
 
     if search:
         query = query.where(
             ProductModel.name.ilike(f"%{search}%")
         )
-
-    # ----------------------------
-    # Category Filter
-    # ----------------------------
-
-    if category_id:
-        query = query.where(
-            ProductModel.category_id == category_id
-        )
-
-    # ----------------------------
-    # Price Filter
-    # ----------------------------
 
     if min_price is not None:
         query = query.where(
@@ -114,64 +86,58 @@ def get_all_products(
             ProductModel.price <= max_price
         )
 
-    # ----------------------------
-    # Stock Filter
-    # ----------------------------
-
     if in_stock:
         query = query.where(
             ProductModel.stock > 0
         )
 
-    # ----------------------------
-    # Sorting
-    # ----------------------------
+    if sort == ProductSortEnum.price_low:
+        query = query.order_by(ProductModel.price.asc())
 
-    if sort == "price_low":
-        query = query.order_by(asc(ProductModel.price))
+    elif sort == ProductSortEnum.price_high:
+        query = query.order_by(ProductModel.price.desc())
 
-    elif sort == "price_high":
-        query = query.order_by(desc(ProductModel.price))
+    elif sort == ProductSortEnum.name_asc:
+        query = query.order_by(ProductModel.name.asc())
 
-    elif sort == "oldest":
-        query = query.order_by(asc(ProductModel.created_at))
+    elif sort == ProductSortEnum.name_desc:
+        query = query.order_by(ProductModel.name.desc())
+
+    elif sort == ProductSortEnum.oldest:
+        query = query.order_by(ProductModel.created_at.asc())
 
     else:
-        query = query.order_by(desc(ProductModel.created_at))
-
-    # ----------------------------
-    # Total Count
-    # ----------------------------
+        query = query.order_by(ProductModel.created_at.desc())
 
     return paginate(
-    db=db,
-    query=query,
-    page=page,
-    limit=limit
-)
+        db=db,
+        query=query,
+        page=page,
+        limit=limit,
+    )
 
 
-# -------------------------
-# Get One Product
-# -------------------------
+
 
 def get_one_product(
     product_id: int,
-    db: Session
+    db: Session,
 ):
-
-    product = db.get(ProductModel, product_id)
+    product = db.execute(
+        select(ProductModel)
+        .options(
+            selectinload(ProductModel.category)
+        )
+        .where(
+            ProductModel.id == product_id,
+            ProductModel.is_active == True
+        )
+    ).scalar_one_or_none()
 
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
-
-    if not product.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
+            detail="Product not found."
         )
 
     return product
@@ -180,53 +146,43 @@ def get_one_product(
 def update_product(
     product_id: int,
     body: ProductUpdateSchema,
-    db: Session
-):
+    db: Session,
+    current_user: Usermodel,
+):  
 
     product = db.get(ProductModel, product_id)
 
-    if not product:
+    if not product or not product.is_active:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
+            detail="Product not found."
         )
 
-    if not product.is_active:
+    update_data = body.model_dump(exclude_unset=True)
+    if "sku" in update_data:
+        existing_sku = db.execute(
+            select(ProductModel).where(
+                ProductModel.sku == update_data["sku"],
+                ProductModel.id != product.id
+            )
+        ).scalar_one_or_none()
+
+    if existing_sku:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="SKU already exists."
         )
 
-    data = body.model_dump(exclude_unset=True)
-
-    # validate category
-    if "category_id" in data:
-
-        category = db.get(CategoryModel, data["category_id"])
+    if "category_id" in update_data:
+        category = db.get(CategoryModel, update_data["category_id"])
 
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Category not found"
+                detail="Category not found."
             )
 
-    # duplicate product name check
-    if "name" in data:
-
-        existing = db.execute(
-            select(ProductModel).where(
-                ProductModel.name == data["name"],
-                ProductModel.id != product_id
-            )
-        ).scalar_one_or_none()
-
-        if existing:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Product already exists"
-            )
-
-    for field, value in data.items():
+    for field, value in update_data.items():
         setattr(product, field, value)
 
     db.commit()
@@ -235,24 +191,23 @@ def update_product(
     return product
 
 
-
 def delete_product(
     product_id: int,
-    db: Session
+    db: Session,
+    current_user: Usermodel,
 ):
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can delete products."
+        )
 
     product = db.get(ProductModel, product_id)
 
-    if not product:
+    if not product or not product.is_active:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
-
-    if not product.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product already deleted"
+            detail="Product not found."
         )
 
     product.is_active = False

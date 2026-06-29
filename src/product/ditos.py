@@ -2,6 +2,7 @@ from decimal import Decimal
 from datetime import datetime
 from typing import Optional
 from typing import List
+from src.category.ditos import CategoryResponseSchema
 
 from pydantic import BaseModel, ConfigDict,Field
 
@@ -20,6 +21,8 @@ class ProductCreateSchema(BaseModel):
     stock: int
     image_url: Optional[str] = None
     category_id: int
+    brand: str | None = None
+    sku: str
 
 
 class ProductUpdateSchema(BaseModel):
@@ -30,6 +33,8 @@ class ProductUpdateSchema(BaseModel):
     image_url: Optional[str] = None
     category_id: Optional[int] = None
     is_active: Optional[bool] = None
+    brand: str | None = None
+    sku: str | None = None
 
 
 class ProductResponseSchema(BaseModel):
@@ -47,9 +52,11 @@ class ProductResponseSchema(BaseModel):
     stock: int
     image_url: Optional[str]
     is_active: bool
-    category_id: int
+    category: CategoryResponseSchema
     created_at: datetime
     updated_at: datetime
+    brand:str | None
+    sku: str
 
     model_config = ConfigDict(from_attributes=True)
 
