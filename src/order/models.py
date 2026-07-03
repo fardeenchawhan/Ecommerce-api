@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from src.order.order_status import OrderStatus
 
 from sqlalchemy import (
     String,
@@ -14,12 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.utils.db import Base
 
 
-class OrderStatus(str, Enum):
-    PENDING = "Pending"
-    CONFIRMED = "Confirmed"
-    SHIPPED = "Shipped"
-    DELIVERED = "Delivered"
-    CANCELLED = "Cancelled"
+
 
 
 class OrderModel(Base):
@@ -38,9 +34,13 @@ class OrderModel(Base):
         default=0,
     )
 
-    status: Mapped[str] = mapped_column(
-        String(30),
-        default="Pending",
+    status: Mapped[OrderStatus] = mapped_column(
+        SqlEnum(
+            OrderStatus,
+            name="order_status",
+            create_type=False,   # <-- important
+        ),
+        default=OrderStatus.PENDING,
         nullable=False,
         index=True,
     )

@@ -22,7 +22,7 @@ class ProductModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now(),nullable=False)
 
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False,index=True)
 
     category = relationship("CategoryModel", back_populates="products")
     cart_items = relationship("CartItemModel", back_populates="product", cascade="all, delete")

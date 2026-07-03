@@ -39,7 +39,7 @@ async def create_product(
     current_user: Usermodel = Depends(get_current_admin)
 
 ):
-    return controller.create_product(body, db)
+    return controller.create_product(body, db,current_user)
 
 
 # -------------------------
@@ -111,7 +111,8 @@ async def update_product(
     return controller.update_product(
         product_id,
         body,
-        db
+        db,
+        current_user
     )
 
 
@@ -132,5 +133,6 @@ async def delete_product(
 ):
     return controller.delete_product(
         product_id,
-        db
+        db,
+        current_user
     )

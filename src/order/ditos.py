@@ -1,18 +1,10 @@
 from decimal import Decimal
 from datetime import datetime
-from enum import Enum
 
 from pydantic import BaseModel, ConfigDict
 
 from src.product.ditos import ProductResponseSchema
-
-
-class OrderStatus(str, Enum):
-    PENDING = "pending"
-    CONFIRMED = "confirmed"
-    SHIPPED = "shipped"
-    DELIVERED = "delivered"
-    CANCELLED = "cancelled"
+from src.order.order_status import OrderStatus
 
 
 class OrderItemResponseSchema(BaseModel):

@@ -1,8 +1,8 @@
 """initial schema
 
-Revision ID: 8fd3953033be
+Revision ID: f5f7e9faabb3
 Revises: 
-Create Date: 2026-06-30 22:48:03.622941
+Create Date: 2026-07-03 22:12:43.994818
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8fd3953033be'
+revision: str = 'f5f7e9faabb3'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -71,15 +71,15 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_products_brand'), 'products', ['brand'], unique=False)
+    op.create_index(op.f('ix_products_category_id'), 'products', ['category_id'], unique=False)
     op.create_index(op.f('ix_products_id'), 'products', ['id'], unique=False)
     op.create_index(op.f('ix_products_name'), 'products', ['name'], unique=False)
     op.create_index(op.f('ix_products_sku'), 'products', ['sku'], unique=True)
     op.create_table('cart_items',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
-    sa.Column('created_at',sa.DateTime(timezone=True),server_default=sa.text('now()'),nullable=False),
-
-    sa.Column('updated_at',sa.DateTime(timezone=True),server_default=sa.text('now()'),nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('product_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
@@ -88,6 +88,8 @@ def upgrade() -> None:
     sa.UniqueConstraint('user_id', 'product_id', name='uq_cart_user_product')
     )
     op.create_index(op.f('ix_cart_items_id'), 'cart_items', ['id'], unique=False)
+    op.create_index(op.f('ix_cart_items_product_id'), 'cart_items', ['product_id'], unique=False)
+    op.create_index(op.f('ix_cart_items_user_id'), 'cart_items', ['user_id'], unique=False)
     op.create_table('order_items',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
@@ -111,11 +113,14 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_order_items_order_id'), table_name='order_items')
     op.drop_index(op.f('ix_order_items_id'), table_name='order_items')
     op.drop_table('order_items')
+    op.drop_index(op.f('ix_cart_items_user_id'), table_name='cart_items')
+    op.drop_index(op.f('ix_cart_items_product_id'), table_name='cart_items')
     op.drop_index(op.f('ix_cart_items_id'), table_name='cart_items')
     op.drop_table('cart_items')
     op.drop_index(op.f('ix_products_sku'), table_name='products')
     op.drop_index(op.f('ix_products_name'), table_name='products')
     op.drop_index(op.f('ix_products_id'), table_name='products')
+    op.drop_index(op.f('ix_products_category_id'), table_name='products')
     op.drop_index(op.f('ix_products_brand'), table_name='products')
     op.drop_table('products')
     op.drop_index(op.f('ix_orders_user_id'), table_name='orders')

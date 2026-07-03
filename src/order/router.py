@@ -8,6 +8,7 @@ from src.order.ditos import (
     OrderResponseSchema,
     UpdateOrderStatusSchema,
 )
+from src.utils.helpers import get_current_admin
 from src.user.models import Usermodel
 from src.utils.db import get_db
 from src.utils.helpers import get_current_user
@@ -113,7 +114,7 @@ async def update_order_status(
     order_id: int,
     body: UpdateOrderStatusSchema,
     db: Session = Depends(get_db),
-    current_user: Usermodel = Depends(get_current_user),
+    current_user: Usermodel = Depends(get_current_admin),
 ):
     return controller.update_order_status(
         order_id,

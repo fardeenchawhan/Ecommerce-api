@@ -3,6 +3,7 @@ from decimal import Decimal
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
+from src.order.order_status import OrderStatus
 
 from src.cart.models import CartItemModel
 from src.order.ditos import UpdateOrderStatusSchema
@@ -38,7 +39,7 @@ def checkout(db: Session, current_user: Usermodel):
         user_id=current_user.id,
         total_amount=Decimal("0.00"),
         total_items=0,
-        status="pending",
+        status=OrderStatus.PENDING,
     )
 
     db.add(order)
