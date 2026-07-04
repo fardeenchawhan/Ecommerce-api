@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+from src.order.order_status import OrderStatus
 
 from src.order import controller
 from src.order.ditos import (
@@ -33,24 +34,6 @@ async def checkout(
 ):
     return controller.checkout(db, current_user)
 
-
-
-
-@order_routes.get(
-    "/admin/all",
-    response_model=List[OrderResponseSchema],
-    status_code=status.HTTP_200_OK,
-    summary="Get all orders",
-    description="Admin: View all orders.",
-)
-async def get_all_orders(
-    db: Session = Depends(get_db),
-    current_user: Usermodel = Depends(get_current_user),
-):
-    return controller.get_all_orders(
-        db,
-        current_user,
-    )
 
 
 @order_routes.get(
@@ -89,17 +72,21 @@ async def get_my_order(
 @order_routes.get(
     "/admin/all",
     response_model=List[OrderResponseSchema],
-    status_code=status.HTTP_200_OK,
     summary="Get all orders",
-    description="Admin: View all orders.",
 )
 async def get_all_orders(
+    skip: int = 0,
+    limit: int = 10,
+    status: OrderStatus | None = None,
     db: Session = Depends(get_db),
-    current_user: Usermodel = Depends(get_current_user),
+    current_user: Usermodel = Depends(get_current_admin),
 ):
     return controller.get_all_orders(
-        db,
-        current_user,
+        db=db,
+        current_user=current_user,
+        skip=skip,
+        limit=limit,
+        status_filter=status,
     )
 
 

@@ -159,26 +159,40 @@ def get_my_order(
     return order
 
 
+from sqlalchemy import select
+
 def get_all_orders(
     db: Session,
     current_user: Usermodel,
+    skip: int = 0,
+    limit: int = 10,
+    status_filter: OrderStatus | None = None,
 ):
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can access this resource"
+            detail="Only admin can access this resource",
         )
 
-    return (
-        db.execute(
-            select(OrderModel)
-            .options(
-                joinedload(OrderModel.user),
-                joinedload(OrderModel.order_items)
-                .joinedload(OrderItemModel.product),
-            )
-            .order_by(OrderModel.created_at.desc())
+    query = (
+        select(OrderModel)
+        .options(
+            joinedload(OrderModel.user),
+            joinedload(OrderModel.order_items)
+            .joinedload(OrderItemModel.product),
         )
+        .order_by(OrderModel.created_at.desc())
+    )
+
+    if status_filter:
+        query = query.where(
+            OrderModel.status == status_filter
+        )
+
+    query = query.offset(skip).limit(limit)
+
+    return (
+        db.execute(query)
         .unique()
         .scalars()
         .all()
@@ -205,7 +219,7 @@ def update_order_status(
             detail="Order not found"
         )
 
-    order.status = body.status.value
+    order.status = body.status
 
     db.commit()
 
