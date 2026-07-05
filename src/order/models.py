@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from src.order.order_status import OrderStatus
+from src.order.enums import OrderStatus
 
 from sqlalchemy import (
     String,

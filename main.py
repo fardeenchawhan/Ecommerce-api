@@ -7,7 +7,7 @@ from src.category.models import CategoryModel
 from src.product.models import ProductModel
 from src.cart.models import CartItemModel
 from src.order.models import OrderModel, OrderItemModel
-
+from src.dashboard.router import dashboard_routes
 # routers
 from src.auth.router import auth_routes
 from src.user.router import user_routes
@@ -42,7 +42,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+
 app.include_router(auth_routes)
+app.include_router(dashboard_routes)
 app.include_router(user_routes)
 app.include_router(category_routes)
 app.include_router(product_routes)

@@ -1,8 +1,9 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status,Query
 from sqlalchemy.orm import Session
-from src.order.order_status import OrderStatus
+from src.order.enums import OrderStatus, OrderSort
+from datetime import datetime
 
 from src.order import controller
 from src.order.ditos import (
@@ -13,6 +14,7 @@ from src.utils.helpers import get_current_admin
 from src.user.models import Usermodel
 from src.utils.db import get_db
 from src.utils.helpers import get_current_user
+from src.order import admin_service
 
 
 order_routes = APIRouter(
@@ -72,21 +74,69 @@ async def get_my_order(
 @order_routes.get(
     "/admin/all",
     response_model=List[OrderResponseSchema],
-    summary="Get all orders",
+    status_code=status.HTTP_200_OK,
+    summary="Admin - Get all orders",
+    description="""
+Search, filter and paginate all orders.
+
+Supports:
+
+- Pagination
+- Search by username
+- Search by name
+- Search by email
+- Filter by status
+- Filter by start date
+- Filter by end date
+""",
 )
 async def get_all_orders(
-    skip: int = 0,
-    limit: int = 10,
-    status: OrderStatus | None = None,
+    skip: int = Query(
+        default=0,
+        ge=0,
+        description="Number of records to skip",
+    ),
+    limit: int = Query(
+        default=10,
+        ge=1,
+        le=100,
+        description="Number of records to return",
+    ),
+    status_filter: OrderStatus | None = Query(
+        default=None,
+        description="Filter by order status",
+    ),
+
+    sort_by: OrderSort = Query(
+    default=OrderSort.NEWEST,
+    description="Sorting option",
+    ),
+
+    search: str | None = Query(
+        default=None,
+        description="Search by username, name or email",
+    ),
+    start_date: datetime | None = Query(
+        default=None,
+        description="Orders created on or after this date",
+    ),
+    end_date: datetime | None = Query(
+        default=None,
+        description="Orders created on or before this date",
+    ),
     db: Session = Depends(get_db),
     current_user: Usermodel = Depends(get_current_admin),
 ):
-    return controller.get_all_orders(
+    return admin_service.get_all_orders(
         db=db,
         current_user=current_user,
         skip=skip,
         limit=limit,
-        status_filter=status,
+        status_filter=status_filter,
+        search=search,
+        start_date=start_date,
+        end_date=end_date,
+        sort_by=sort_by,
     )
 
 
@@ -103,7 +153,7 @@ async def update_order_status(
     db: Session = Depends(get_db),
     current_user: Usermodel = Depends(get_current_admin),
 ):
-    return controller.update_order_status(
+    return admin_service.update_order_status(
         order_id,
         body,
         db,

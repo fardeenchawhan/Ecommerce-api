@@ -4,7 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from src.product.ditos import ProductResponseSchema
-from src.order.order_status import OrderStatus
+from src.order.enums import OrderStatus
 
 
 class OrderItemResponseSchema(BaseModel):

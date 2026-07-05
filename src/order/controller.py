@@ -1,10 +1,10 @@
 from decimal import Decimal
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select,or_
 from sqlalchemy.orm import Session, joinedload
-from src.order.order_status import OrderStatus
-
+from src.order.enums import OrderStatus, OrderSort
+from datetime import datetime, timedelta
 from src.cart.models import CartItemModel
 from src.order.ditos import UpdateOrderStatusSchema
 from src.order.models import OrderItemModel, OrderModel
@@ -159,70 +159,5 @@ def get_my_order(
     return order
 
 
-from sqlalchemy import select
-
-def get_all_orders(
-    db: Session,
-    current_user: Usermodel,
-    skip: int = 0,
-    limit: int = 10,
-    status_filter: OrderStatus | None = None,
-):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can access this resource",
-        )
-
-    query = (
-        select(OrderModel)
-        .options(
-            joinedload(OrderModel.user),
-            joinedload(OrderModel.order_items)
-            .joinedload(OrderItemModel.product),
-        )
-        .order_by(OrderModel.created_at.desc())
-    )
-
-    if status_filter:
-        query = query.where(
-            OrderModel.status == status_filter
-        )
-
-    query = query.offset(skip).limit(limit)
-
-    return (
-        db.execute(query)
-        .unique()
-        .scalars()
-        .all()
-    )
 
 
-def update_order_status(
-    order_id: int,
-    body: UpdateOrderStatusSchema,
-    db: Session,
-    current_user: Usermodel,
-):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can update order status"
-        )
-
-    order = db.get(OrderModel, order_id)
-
-    if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order not found"
-        )
-
-    order.status = body.status
-
-    db.commit()
-
-    db.refresh(order)
-
-    return order

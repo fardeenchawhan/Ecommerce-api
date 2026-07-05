@@ -7,3 +7,10 @@ class OrderStatus(str, Enum):
     SHIPPED = "SHIPPED"
     DELIVERED = "DELIVERED"
     CANCELLED = "CANCELLED"
+
+
+class OrderSort(str, Enum):
+    NEWEST = "newest"
+    OLDEST = "oldest"
+    HIGHEST = "highest"
+    LOWEST = "lowest"
