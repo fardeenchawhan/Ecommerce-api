@@ -13,6 +13,7 @@ from src.category.models import CategoryModel
 from src.product.models import ProductModel
 from src.cart.models import CartItemModel
 from src.order.models import OrderModel, OrderItemModel
+from src.review.models import ReviewModel
 
 
 config = context.config

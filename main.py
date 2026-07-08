@@ -17,6 +17,8 @@ from src.cart.router import cart_routes
 from src.order.router import order_routes
 from contextlib import asynccontextmanager
 from src.user.controller import create_admin_if_not_exists
+from src.review.models import ReviewModel
+from src.review.router import review_routes
 
 
 
@@ -50,6 +52,7 @@ app.include_router(category_routes)
 app.include_router(product_routes)
 app.include_router(cart_routes)
 app.include_router(order_routes)
+app.include_router(review_routes)
 
 
 @app.get("/", tags=["System"], summary="API Information")

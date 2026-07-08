@@ -3,7 +3,7 @@ from decimal import Decimal
 from src.product.enums import ProductSortEnum
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select ,func
 from sqlalchemy.orm import Session, selectinload
 
 from src.category.models import CategoryModel
@@ -11,6 +11,53 @@ from src.product.ditos import ProductCreateSchema, ProductUpdateSchema
 from src.product.models import ProductModel
 from src.user.models import Usermodel
 from src.utils.pagination import paginate
+
+from src.review.models import ReviewModel
+
+def attach_review_stats(
+    db: Session,
+    products: list[ProductModel],
+):
+    if not products:
+        return products
+
+    product_ids = [product.id for product in products]
+
+    review_stats = (
+        db.execute(
+            select(
+                ReviewModel.product_id,
+                func.avg(ReviewModel.rating),
+                func.count(ReviewModel.id),
+            )
+            .where(
+                ReviewModel.product_id.in_(product_ids)
+            )
+            .group_by(
+                ReviewModel.product_id
+            )
+        )
+        .all()
+    )
+
+    stats = {
+        product_id: (
+            round(float(avg_rating), 2),
+            review_count,
+        )
+        for product_id, avg_rating, review_count in review_stats
+    }
+
+    for product in products:
+        average_rating, review_count = stats.get(
+            product.id,
+            (0.0, 0),
+        )
+
+        product.average_rating = average_rating
+        product.review_count = review_count
+
+    return products
 
 
 def create_product(
@@ -109,12 +156,19 @@ def get_all_products(
     else:
         query = query.order_by(ProductModel.created_at.desc())
 
-    return paginate(
+    result= paginate(
         db=db,
         query=query,
         page=page,
         limit=limit,
     )
+
+    result["items"]= attach_review_stats(
+        db,
+        result["items"],
+    )
+
+    return result
 
 
 
@@ -139,7 +193,11 @@ def get_one_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found."
         )
-
+    
+    attach_review_stats(
+        db,
+        [product]
+    )
     return product
 
 
@@ -157,7 +215,7 @@ def update_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found."
         )
-
+    existing_sku=None
     update_data = body.model_dump(exclude_unset=True)
     if "sku" in update_data:
         existing_sku = db.execute(

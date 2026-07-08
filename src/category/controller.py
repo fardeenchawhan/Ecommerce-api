@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select,func
 from sqlalchemy.orm import Session
+
+from src.product.models import ProductModel
 
 from src.category.models import CategoryModel
 from src.category.ditos import CategoryCreateSchema, CategoryUpdateSchema
@@ -33,23 +35,70 @@ def create_category(
     return new_category
 
 
-def get_all_categories(db: Session):
-    result = db.execute(select(CategoryModel))
-    categories = result.scalars().all()
+
+def get_all_categories(
+    db: Session,
+    search: str | None = None,
+):
+    query = (
+        select(
+            CategoryModel,
+            func.count(ProductModel.id).label("product_count")
+        )
+        .outerjoin(
+            ProductModel,
+            ProductModel.category_id == CategoryModel.id
+        )
+        .group_by(CategoryModel.id)
+        .order_by(CategoryModel.name.asc())
+    )
+
+    if search:
+        query = query.where(
+            CategoryModel.name.ilike(f"%{search}%")
+        )
+
+    result = db.execute(query).all()
+
+    categories = []
+
+    for category, product_count in result:
+        category.product_count = product_count
+        categories.append(category)
+
     return categories
 
 
-def get_one_category(category_id: int, db: Session):
-    category = db.get(CategoryModel, category_id)
+def get_one_category(
+    category_id: int,
+    db: Session,
+):
+    result = db.execute(
+        select(
+            CategoryModel,
+            func.count(ProductModel.id).label("product_count")
+        )
+        .outerjoin(
+            ProductModel,
+            ProductModel.category_id == CategoryModel.id
+        )
+        .where(
+            CategoryModel.id == category_id
+        )
+        .group_by(CategoryModel.id)
+    ).first()
 
-    if not category:
+    if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Category not found"
         )
 
-    return category
+    category, product_count = result
 
+    category.product_count = product_count
+
+    return category
 
 def update_category(
     category_id: int,

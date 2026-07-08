@@ -15,4 +15,5 @@ class Usermodel(Base):
 
     cart_items = relationship("CartItemModel", back_populates="user", cascade="all, delete")
     orders = relationship("OrderModel", back_populates="user", cascade="all, delete")
+    reviews = relationship("ReviewModel",back_populates="user",cascade="all, delete-orphan",)
 

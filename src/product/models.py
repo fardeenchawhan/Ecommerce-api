@@ -27,3 +27,4 @@ class ProductModel(Base):
     category = relationship("CategoryModel", back_populates="products")
     cart_items = relationship("CartItemModel", back_populates="product", cascade="all, delete")
     order_items = relationship("OrderItemModel", back_populates="product")
+    reviews = relationship("ReviewModel",back_populates="product",cascade="all, delete-orphan",)

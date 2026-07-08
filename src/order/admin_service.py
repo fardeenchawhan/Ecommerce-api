@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from src.order.ditos import UpdateOrderStatusSchema
 from src.order.models import OrderItemModel, OrderModel
 from src.user.models import Usermodel
-
+from src.order.service import cancel_order
 
 
 
@@ -126,21 +126,67 @@ def update_order_status(
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can update order status"
+            detail="Only admin can update order status",
         )
 
-    order = db.get(OrderModel, order_id)
+    order = (
+        db.execute(
+            select(OrderModel)
+            .options(
+                joinedload(OrderModel.order_items)
+            )
+            .where(OrderModel.id == order_id)
+        )
+        .unique()
+        .scalar_one_or_none()
+    )
 
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order not found"
+            detail="Order not found",
+        )
+
+    # Already in same status
+    if order.status == body.status:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Order is already {body.status.value}.",
+        )
+
+    # Admin cancels order
+    if body.status == OrderStatus.CANCELLED:
+        return cancel_order(order, db)
+
+    # Valid status transitions
+    allowed_transitions = {
+        OrderStatus.PENDING: [
+            OrderStatus.CONFIRMED,
+            OrderStatus.CANCELLED,
+        ],
+        OrderStatus.CONFIRMED: [
+            OrderStatus.SHIPPED,
+            OrderStatus.CANCELLED,
+        ],
+        OrderStatus.SHIPPED: [
+            OrderStatus.DELIVERED,
+        ],
+        OrderStatus.DELIVERED: [],
+        OrderStatus.CANCELLED: [],
+    }
+
+    if body.status not in allowed_transitions[order.status]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Cannot change order status from "
+                f"{order.status.value} to {body.status.value}."
+            ),
         )
 
     order.status = body.status
 
     db.commit()
-
     db.refresh(order)
 
     return order

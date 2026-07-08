@@ -159,3 +159,30 @@ async def update_order_status(
         db,
         current_user,
     )
+
+
+
+@order_routes.patch(
+    "/{order_id}/cancel",
+    response_model=OrderResponseSchema,
+    status_code=status.HTTP_200_OK,
+    summary="Cancel my order",
+    description="""
+Cancel the current user's order.
+
+Rules:
+- Only the owner can cancel.
+- Only PENDING or CONFIRMED orders can be cancelled.
+- Stock is automatically restored.
+""",
+)
+async def cancel_my_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usermodel = Depends(get_current_user),
+):
+    return controller.cancel_my_order(
+        order_id,
+        db,
+        current_user,
+    )

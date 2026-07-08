@@ -10,6 +10,7 @@ from src.order.ditos import UpdateOrderStatusSchema
 from src.order.models import OrderItemModel, OrderModel
 from src.product.models import ProductModel
 from src.user.models import Usermodel
+from src.order.service import cancel_order
 
 
 def checkout(db: Session, current_user: Usermodel):
@@ -160,4 +161,30 @@ def get_my_order(
 
 
 
+def cancel_my_order(
+    order_id: int,
+    db: Session,
+    current_user: Usermodel,
+):
+    order = (
+        db.execute(
+            select(OrderModel)
+            .options(
+                joinedload(OrderModel.order_items)
+            )
+            .where(
+                OrderModel.id == order_id,
+                OrderModel.user_id == current_user.id,
+            )
+        )
+        .unique()
+        .scalar_one_or_none()
+    )
 
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found."
+        )
+
+    return cancel_order(order, db)

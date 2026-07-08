@@ -44,9 +44,10 @@ async def create_category(
     description="Get all categories."
 )
 async def get_all_categories(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    search: str | None = None
 ):
-    return controller.get_all_categories(db)
+    return controller.get_all_categories(db,search)
 
 
 @category_routes.get(

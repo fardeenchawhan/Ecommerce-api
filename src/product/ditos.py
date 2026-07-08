@@ -2,7 +2,7 @@ from decimal import Decimal
 from datetime import datetime
 from typing import Optional
 from typing import List
-from src.category.ditos import CategoryResponseSchema
+from src.category.ditos import CategorySimpleResponseSchema
 
 from pydantic import BaseModel, ConfigDict,Field
 
@@ -52,11 +52,13 @@ class ProductResponseSchema(BaseModel):
     stock: int
     image_url: Optional[str]
     is_active: bool
-    category: CategoryResponseSchema
+    category: CategorySimpleResponseSchema
     created_at: datetime
     updated_at: datetime
     brand:str | None
     sku: str
+    average_rating: float = 0.0
+    review_count: int = 0
 
     model_config = ConfigDict(from_attributes=True)
 
