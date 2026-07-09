@@ -11,6 +11,7 @@ from src.product.ditos import ProductCreateSchema, ProductUpdateSchema
 from src.product.models import ProductModel
 from src.user.models import Usermodel
 from src.utils.pagination import paginate
+from src.product.helper import generate_sku
 
 from src.review.models import ReviewModel
 
@@ -60,23 +61,14 @@ def attach_review_stats(
     return products
 
 
+from src.product.helper import generate_sku
+
+
 def create_product(
     body: ProductCreateSchema,
     db: Session,
     current_user: Usermodel,
 ):
-    existing_sku = db.execute(
-            select(ProductModel).where(
-                ProductModel.sku == body.sku
-            )
-        ).scalar_one_or_none()
-
-    if existing_sku:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="SKU already exists."
-        )
-
     category = db.get(CategoryModel, body.category_id)
 
     if not category:
@@ -85,7 +77,26 @@ def create_product(
             detail="Category not found."
         )
 
-    product = ProductModel(**body.model_dump())
+    # Generate a unique SKU
+    while True:
+        sku = generate_sku(
+            category_name=category.name,
+            brand=body.brand or "GENERIC",
+        )
+
+        existing_sku = db.execute(
+            select(ProductModel).where(
+                ProductModel.sku == sku
+            )
+        ).scalar_one_or_none()
+
+        if not existing_sku:
+            break
+
+    product = ProductModel(
+        **body.model_dump(),
+        sku=sku,
+    )
 
     db.add(product)
     db.commit()

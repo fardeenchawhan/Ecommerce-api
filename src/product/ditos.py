@@ -22,7 +22,6 @@ class ProductCreateSchema(BaseModel):
     image_url: Optional[str] = None
     category_id: int
     brand: str | None = None
-    sku: str
 
 
 class ProductUpdateSchema(BaseModel):
