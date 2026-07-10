@@ -5,10 +5,11 @@ from sqlalchemy.orm import Session
 from src.utils.schemas import PaginatedResponse
 from src.product.enums import ProductSortEnum
 from decimal import Decimal
-
+from src.product import controller
+from src.product import admin_service
 
 from src.product import controller
-from src.product.ditos import ( ProductCreateSchema,ProductUpdateSchema,ProductResponseSchema,)
+from src.product.ditos import ( ProductCreateSchema,ProductUpdateSchema,ProductResponseSchema,ProductStatisticsSchema,LowStockProductSchema)
 from src.utils.db import get_db
 from src.utils.helpers import get_current_admin
 from src.user.models import Usermodel
@@ -39,7 +40,7 @@ async def create_product(
     current_user: Usermodel = Depends(get_current_admin)
 
 ):
-    return controller.create_product(body, db,current_user)
+    return admin_service.create_product(body, db,current_user)
 
 
 # -------------------------
@@ -108,7 +109,7 @@ async def update_product(
     current_user: Usermodel = Depends(get_current_admin)
 
 ):
-    return controller.update_product(
+    return admin_service.update_product(
         product_id,
         body,
         db,
@@ -131,8 +132,49 @@ async def delete_product(
     current_user: Usermodel = Depends(get_current_admin)
 
 ):
-    return controller.delete_product(
+    return admin_service.delete_product(
         product_id,
         db,
         current_user
+    )
+
+
+
+@product_routes.get(
+    "/admin/low-stock",
+    response_model=List[LowStockProductSchema],
+    summary="Low Stock Products",
+)
+async def get_low_stock_products(
+    threshold: int = Query(
+        default=5,
+        ge=1,
+    ),
+    db: Session = Depends(get_db),
+    current_user: Usermodel = Depends(get_current_admin),
+):
+    return admin_service.get_low_stock_products(
+        db=db,
+        current_user=current_user,
+        threshold=threshold,
+    )
+
+
+@product_routes.get(
+    "/admin/statistics",
+    response_model=ProductStatisticsSchema,
+    summary="Product Statistics",
+)
+async def get_product_statistics(
+    threshold: int = Query(
+        default=5,
+        ge=1,
+    ),
+    db: Session = Depends(get_db),
+    current_user: Usermodel = Depends(get_current_admin),
+):
+    return admin_service.get_product_statistics(
+        db=db,
+        current_user=current_user,
+        threshold=threshold,
     )

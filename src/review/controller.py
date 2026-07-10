@@ -34,7 +34,7 @@ def create_review(
             .join(OrderModel)
             .where(
                 OrderModel.user_id == current_user.id,
-                (OrderModel.status == OrderStatus.DELIVERED) | (OrderModel.status == OrderStatus.CANCELLED),
+                (OrderModel.status == OrderStatus.DELIVERED),
                 OrderItemModel.product_id == product_id
             )
         )
@@ -45,7 +45,7 @@ def create_review(
     if not purchased:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only review products you have purchased.",
+            detail="Only delivered products can be reviewed.",
         )
 
     existing_review = (
@@ -163,24 +163,22 @@ def get_my_reviews(
     db: Session,
     current_user: Usermodel,
 ):
-    return (
-        db.execute(
-            select(ReviewModel)
-            .options(
-                joinedload(ReviewModel.product),
-                joinedload(ReviewModel.user),
-            )
-            .where(
-                ReviewModel.user_id == current_user.id,
-            )
-            .order_by(
-                ReviewModel.created_at.desc()
-            )
+    reviews=db.execute(
+        select(ReviewModel)
+        .options(
+            joinedload(ReviewModel.product),
+            joinedload(ReviewModel.user),
         )
-        .unique()
-        .scalars()
-        .all()
-    )
+        .where(
+            ReviewModel.user_id == current_user.id,
+        )
+        .order_by(
+            ReviewModel.created_at.desc()
+        )
+    ).unique().scalars().all()
+    
+    return reviews
+    
 
 
 def get_product_reviews(

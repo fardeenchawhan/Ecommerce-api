@@ -125,7 +125,7 @@ async def get_product_reviews(
 
 
 @review_routes.get(
-    "/product/{product_id}/rating",
+    "/product/rating/{product_id}",
     status_code=status.HTTP_200_OK,
     summary="Product rating",
     description="Get average rating and review count of a product.",

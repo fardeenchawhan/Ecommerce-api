@@ -6,13 +6,10 @@ from fastapi import HTTPException, status
 from sqlalchemy import select ,func
 from sqlalchemy.orm import Session, selectinload
 
-from src.category.models import CategoryModel
-from src.product.ditos import ProductCreateSchema, ProductUpdateSchema
 from src.product.models import ProductModel
-from src.user.models import Usermodel
 from src.utils.pagination import paginate
 from src.product.helper import generate_sku
-
+from src.product.helper import generate_sku
 from src.review.models import ReviewModel
 
 def attach_review_stats(
@@ -62,47 +59,6 @@ def attach_review_stats(
 
 
 from src.product.helper import generate_sku
-
-
-def create_product(
-    body: ProductCreateSchema,
-    db: Session,
-    current_user: Usermodel,
-):
-    category = db.get(CategoryModel, body.category_id)
-
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found."
-        )
-
-    # Generate a unique SKU
-    while True:
-        sku = generate_sku(
-            category_name=category.name,
-            brand=body.brand or "GENERIC",
-        )
-
-        existing_sku = db.execute(
-            select(ProductModel).where(
-                ProductModel.sku == sku
-            )
-        ).scalar_one_or_none()
-
-        if not existing_sku:
-            break
-
-    product = ProductModel(
-        **body.model_dump(),
-        sku=sku,
-    )
-
-    db.add(product)
-    db.commit()
-    db.refresh(product)
-
-    return product
 
 
 def get_all_products(
@@ -212,75 +168,4 @@ def get_one_product(
     return product
 
 
-def update_product(
-    product_id: int,
-    body: ProductUpdateSchema,
-    db: Session,
-    current_user: Usermodel,
-):  
 
-    product = db.get(ProductModel, product_id)
-
-    if not product or not product.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found."
-        )
-    existing_sku=None
-    update_data = body.model_dump(exclude_unset=True)
-    if "sku" in update_data:
-        existing_sku = db.execute(
-            select(ProductModel).where(
-                ProductModel.sku == update_data["sku"],
-                ProductModel.id != product.id
-            )
-        ).scalar_one_or_none()
-
-    if existing_sku:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="SKU already exists."
-        )
-
-    if "category_id" in update_data:
-        category = db.get(CategoryModel, update_data["category_id"])
-
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Category not found."
-            )
-
-    for field, value in update_data.items():
-        setattr(product, field, value)
-
-    db.commit()
-    db.refresh(product)
-
-    return product
-
-
-def delete_product(
-    product_id: int,
-    db: Session,
-    current_user: Usermodel,
-):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can delete products."
-        )
-
-    product = db.get(ProductModel, product_id)
-
-    if not product or not product.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found."
-        )
-
-    product.is_active = False
-
-    db.commit()
-
-    return None

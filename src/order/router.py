@@ -167,14 +167,6 @@ async def update_order_status(
     response_model=OrderResponseSchema,
     status_code=status.HTTP_200_OK,
     summary="Cancel my order",
-    description="""
-Cancel the current user's order.
-
-Rules:
-- Only the owner can cancel.
-- Only PENDING or CONFIRMED orders can be cancelled.
-- Stock is automatically restored.
-""",
 )
 async def cancel_my_order(
     order_id: int,

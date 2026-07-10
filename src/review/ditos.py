@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.product.ditos import ProductResponseSchema
-from src.user.ditos import UserResponseSchema
+from src.user.ditos import PublicUserResponseSchema
 
 
 class CreateReviewSchema(BaseModel):
@@ -35,7 +35,7 @@ class ReviewResponseSchema(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    user: UserResponseSchema
+    user: PublicUserResponseSchema
     product: ProductResponseSchema
 
     model_config = ConfigDict(from_attributes=True)

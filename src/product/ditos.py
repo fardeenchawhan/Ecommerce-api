@@ -69,3 +69,24 @@ class ProductListResponseSchema(BaseModel):
     limit: int
     total: int
     total_pages: int
+
+
+
+
+
+class LowStockProductSchema(BaseModel):
+    id: int
+    name: str
+    sku: str
+    stock: int
+    brand: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductStatisticsSchema(BaseModel):
+    total_products: int
+    active_products: int
+    inactive_products: int
+    out_of_stock: int
+    low_stock: int
