@@ -2,11 +2,6 @@ from fastapi import FastAPI
 from src.utils.db import Base, engine
 
 # import models so tables are registered
-from src.user.models import Usermodel
-from src.category.models import CategoryModel
-from src.product.models import ProductModel
-from src.cart.models import CartItemModel
-from src.order.models import OrderModel, OrderItemModel
 from src.dashboard.router import dashboard_routes
 # routers
 from src.auth.router import auth_routes
@@ -17,8 +12,11 @@ from src.cart.router import cart_routes
 from src.order.router import order_routes
 from contextlib import asynccontextmanager
 from src.user.controller import create_admin_if_not_exists
-from src.review.models import ReviewModel
 from src.review.router import review_routes
+from src.exceptions.handlers import register_exception_handlers
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from src.utils.logger import LoggingMiddleware
 
 
 
@@ -44,6 +42,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.add_middleware(
+    BaseHTTPMiddleware,
+    dispatch=LoggingMiddleware(),
+)
+
+register_exception_handlers(app)
 
 app.include_router(auth_routes)
 app.include_router(dashboard_routes)

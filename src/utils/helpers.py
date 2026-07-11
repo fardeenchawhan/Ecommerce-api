@@ -34,10 +34,7 @@ def get_current_user(
             )
 
     except InvalidTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
-        )
+        raise
 
     user = db.execute(
         select(Usermodel).where(Usermodel.id == user_id)

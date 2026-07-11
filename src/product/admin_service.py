@@ -9,7 +9,7 @@ from src.product.ditos import ProductCreateSchema, ProductUpdateSchema
 from src.product.helper import generate_sku
 from src.product.models import ProductModel
 from src.user.models import Usermodel
-
+from src.utils.logger import logger
 
 def create_product(
     body: ProductCreateSchema,
@@ -163,6 +163,10 @@ def create_product(
     db.add(product)
     db.commit()
     db.refresh(product)
+
+    logger.info(
+    f"Admin {current_user.id} created product {product.id}"
+)
 
     return product
 
