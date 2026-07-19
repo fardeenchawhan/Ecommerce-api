@@ -1,9 +1,10 @@
 from fastapi import HTTPException, status
 from sqlalchemy import select,func
 from sqlalchemy.orm import Session
-
+from fastapi.encoders import jsonable_encoder
 from src.product.models import ProductModel
-
+from src.cache.service import get_cache,set_cache,delete_pattern
+from src.cache.constants import CATEGORY_CACHE
 from src.category.models import CategoryModel
 from src.category.ditos import CategoryCreateSchema, CategoryUpdateSchema
 from src.user.models import Usermodel
@@ -32,6 +33,9 @@ def create_category(
     db.commit()
     db.refresh(new_category)
 
+    delete_pattern("products:*")
+    delete_pattern("categories*")
+
     return new_category
 
 
@@ -40,6 +44,15 @@ def get_all_categories(
     db: Session,
     search: str | None = None,
 ):
+    
+    cache_key = "categories"
+
+    cached = get_cache(cache_key)
+
+    if cached:
+        print("✅ Categories served from Redis")
+        return cached
+    
     query = (
         select(
             CategoryModel,
@@ -66,6 +79,11 @@ def get_all_categories(
         category.product_count = product_count
         categories.append(category)
 
+    set_cache(
+    cache_key,
+    categories,
+    CATEGORY_CACHE,
+    )
     return categories
 
 
@@ -139,6 +157,9 @@ def update_category(
     db.commit()
     db.refresh(category)
 
+    delete_pattern("products:*")
+    delete_pattern("categories*")
+
     return category
 
 
@@ -159,5 +180,8 @@ def delete_category(
 
     db.delete(category)
     db.commit()
+
+    delete_pattern("products:*")
+    delete_pattern("categories*")
 
     return None

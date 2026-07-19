@@ -47,7 +47,7 @@ class CategoryResponseSchema(BaseModel):
     )
 
     product_count: int = Field(
-        ...,
+        default=None,
         ge=0,
         description="Total active products in this category",
         examples=[12],

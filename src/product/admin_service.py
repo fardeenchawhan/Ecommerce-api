@@ -1,5 +1,3 @@
-
-
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session

@@ -9,6 +9,9 @@ from src.order.models import OrderModel
 from src.order.enums import OrderStatus
 from src.product.models import ProductModel
 from src.user.models import Usermodel
+from src.cache.service import get_cache, set_cache
+from src.cache.constants import DASHBOARD_CACHE
+from src.utils.logger import logger
 
 
 def get_dashboard(
@@ -20,7 +23,13 @@ def get_dashboard(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admin can access this resource",
         )
+    
+    cache_key = "dashboard"
 
+    cached = get_cache(cache_key)
+
+    if cached:
+        return DashboardResponseSchema(**cached)
     total_users = db.scalar(
         select(func.count()).select_from(Usermodel)
     )
@@ -123,21 +132,29 @@ def get_dashboard(
         or Decimal("0.00")
     )
 
-    return DashboardResponseSchema(
-        total_users=total_users,
-        total_products=total_products,
+    dashboard = DashboardResponseSchema(
+    total_users=total_users,
+    total_products=total_products,
 
-        total_orders=total_orders,
+    total_orders=total_orders,
 
-        pending_orders=pending_orders,
-        confirmed_orders=confirmed_orders,
-        shipped_orders=shipped_orders,
-        delivered_orders=delivered_orders,
-        cancelled_orders=cancelled_orders,
+    pending_orders=pending_orders,
+    confirmed_orders=confirmed_orders,
+    shipped_orders=shipped_orders,
+    delivered_orders=delivered_orders,
+    cancelled_orders=cancelled_orders,
 
-        total_sales=total_sales,
+    total_sales=total_sales,
 
-        today_orders=today_orders,
-        today_sales=today_sales,
-        average_order_value=average_order_value,
+    today_orders=today_orders,
+    today_sales=today_sales,
+    average_order_value=average_order_value,
     )
+
+    set_cache(
+        cache_key,
+        dashboard,
+        DASHBOARD_CACHE,
+    )
+
+    return dashboard

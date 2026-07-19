@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str
     REDIS_URL: str
 
+    BREVO_API_KEY: str
+
+    EMAIL_FROM: str
+
+    EMAIL_FROM_NAME: str
+
     model_config=SettingsConfigDict(env_file=".env",extra="ignore")
 
 settings=Settings()

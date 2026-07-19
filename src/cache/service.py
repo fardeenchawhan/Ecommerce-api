@@ -1,6 +1,7 @@
 import json
 
 from src.utils.redis import redis_client
+from fastapi.encoders import jsonable_encoder
 
 
 def get_cache(key: str):
@@ -20,7 +21,7 @@ def set_cache(
     redis_client.setex(
         key,
         expire,
-        json.dumps(value),
+        json.dumps(jsonable_encoder(value)),
     )
 
 
