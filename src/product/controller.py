@@ -3,6 +3,7 @@ from decimal import Decimal
 from src.product.enums import ProductSortEnum
 
 from fastapi import HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select ,func
 from sqlalchemy.orm import Session, selectinload
 
@@ -11,6 +12,9 @@ from src.utils.pagination import paginate
 from src.product.helper import generate_sku
 from src.product.helper import generate_sku
 from src.review.models import ReviewModel
+import json
+from src.cache.service import get_cache, set_cache
+from src.cache.constants import PRODUCT_CACHE
 
 def attach_review_stats(
     db: Session,
@@ -72,6 +76,24 @@ def get_all_products(
     in_stock: bool | None = None,
     sort: ProductSortEnum = ProductSortEnum.newest,
 ):
+    
+    cache_key = (
+    f"products:"
+    f"{page}:"
+    f"{limit}:"
+    f"{category_id}:"
+    f"{search}:"
+    f"{min_price}:"
+    f"{max_price}:"
+    f"{in_stock}:"
+    f"{sort.value}"
+    )
+
+    cached = get_cache(cache_key)
+
+    if cached:
+        return cached
+    
     query = (
         select(ProductModel)
         .options(
@@ -133,6 +155,14 @@ def get_all_products(
     result["items"]= attach_review_stats(
         db,
         result["items"],
+    )
+
+    encoded = jsonable_encoder(result)
+
+    set_cache(
+        cache_key,
+        encoded,
+        PRODUCT_CACHE,
     )
 
     return result

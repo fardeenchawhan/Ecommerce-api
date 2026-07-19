@@ -1,4 +1,4 @@
-from decimal import Decimal
+
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -10,6 +10,8 @@ from src.product.helper import generate_sku
 from src.product.models import ProductModel
 from src.user.models import Usermodel
 from src.utils.logger import logger
+from src.cache.service import delete_pattern
+
 
 def create_product(
     body: ProductCreateSchema,
@@ -42,14 +44,21 @@ def create_product(
         if not existing_sku:
             break
 
+    data = body.model_dump()
+
+
     product = ProductModel(
-        **body.model_dump(),
+        **data,
         sku=sku,
     )
 
     db.add(product)
     db.commit()
     db.refresh(product)
+
+    delete_pattern("products:*")
+
+    logger.info( f"Admin {current_user.id} created product {product.id}" )
 
     return product
 
@@ -88,122 +97,7 @@ def update_product(
     db.commit()
     db.refresh(product)
 
-    return product
-
-
-def delete_product(
-    product_id: int,
-    db: Session,
-    current_user: Usermodel,
-):
-    product = db.get(ProductModel, product_id)
-
-    if not product or not product.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found.",
-        )
-
-    product.is_active = False
-
-    db.commit()
-
-    return None
-
-
-from decimal import Decimal
-
-from fastapi import HTTPException, status
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
-
-from src.category.models import CategoryModel
-from src.product.ditos import ProductCreateSchema, ProductUpdateSchema
-from src.product.helper import generate_sku
-from src.product.models import ProductModel
-from src.user.models import Usermodel
-
-
-def create_product(
-    body: ProductCreateSchema,
-    db: Session,
-    current_user: Usermodel,
-):
-    category = db.get(CategoryModel, body.category_id)
-
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found.",
-        )
-
-    while True:
-        sku = generate_sku(
-            category_name=category.name,
-            brand=body.brand or "GENERIC",
-        )
-
-        existing_sku = (
-            db.execute(
-                select(ProductModel).where(
-                    ProductModel.sku == sku
-                )
-            )
-            .scalar_one_or_none()
-        )
-
-        if not existing_sku:
-            break
-
-    product = ProductModel(
-        **body.model_dump(),
-        sku=sku,
-    )
-
-    db.add(product)
-    db.commit()
-    db.refresh(product)
-
-    logger.info(
-    f"Admin {current_user.id} created product {product.id}"
-)
-
-    return product
-
-
-def update_product(
-    product_id: int,
-    body: ProductUpdateSchema,
-    db: Session,
-    current_user: Usermodel,
-):
-    product = db.get(ProductModel, product_id)
-
-    if not product or not product.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found.",
-        )
-
-    update_data = body.model_dump(exclude_unset=True)
-
-    if "category_id" in update_data:
-        category = db.get(
-            CategoryModel,
-            update_data["category_id"],
-        )
-
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Category not found.",
-            )
-
-    for field, value in update_data.items():
-        setattr(product, field, value)
-
-    db.commit()
-    db.refresh(product)
+    delete_pattern("products:*")
 
     return product
 
@@ -224,6 +118,8 @@ def delete_product(
     product.is_active = False
 
     db.commit()
+
+    delete_pattern("products:*")
 
     return None
 

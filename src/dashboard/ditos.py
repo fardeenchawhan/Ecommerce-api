@@ -1,22 +1,86 @@
 from decimal import Decimal
-from pydantic import BaseModel
+
+from pydantic import BaseModel, Field
 
 
 class DashboardResponseSchema(BaseModel):
-    total_users: int
-    total_products: int
+    total_users: int = Field(
+        ...,
+        ge=0,
+        description="Total registered users",
+    )
 
-    total_orders: int
+    total_products: int = Field(
+        ...,
+        ge=0,
+        description="Total products in the catalog",
+    )
 
-    pending_orders: int
-    confirmed_orders: int
-    shipped_orders: int
-    delivered_orders: int
-    cancelled_orders: int
+    total_orders: int = Field(
+        ...,
+        ge=0,
+        description="Total orders placed",
+    )
 
-    total_sales: Decimal
+    pending_orders: int = Field(
+        ...,
+        ge=0,
+        description="Orders waiting for confirmation",
+    )
 
-    # NEW
-    today_orders: int
-    today_sales: Decimal
-    average_order_value: Decimal
+    confirmed_orders: int = Field(
+        ...,
+        ge=0,
+        description="Confirmed orders",
+    )
+
+    shipped_orders: int = Field(
+        ...,
+        ge=0,
+        description="Orders currently shipped",
+    )
+
+    delivered_orders: int = Field(
+        ...,
+        ge=0,
+        description="Successfully delivered orders",
+    )
+
+    cancelled_orders: int = Field(
+        ...,
+        ge=0,
+        description="Cancelled orders",
+    )
+
+    total_sales: Decimal = Field(
+        ...,
+        ge=0,
+        max_digits=12,
+        decimal_places=2,
+        description="Total lifetime sales",
+        examples=[125499.50],
+    )
+
+    today_orders: int = Field(
+        ...,
+        ge=0,
+        description="Orders created today",
+    )
+
+    today_sales: Decimal = Field(
+        ...,
+        ge=0,
+        max_digits=12,
+        decimal_places=2,
+        description="Sales generated today",
+        examples=[2450.75],
+    )
+
+    average_order_value: Decimal = Field(
+        ...,
+        ge=0,
+        max_digits=12,
+        decimal_places=2,
+        description="Average value of each order",
+        examples=[899.99],
+    )

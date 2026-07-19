@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-
+import traceback
 from sqlalchemy.exc import SQLAlchemyError
 
 from jwt.exceptions import InvalidTokenError
@@ -77,6 +77,7 @@ def register_exception_handlers(app: FastAPI):
             "Invalid or expired token",
             request,
         )
+
 
     @app.exception_handler(Exception)
     async def global_exception_handler(

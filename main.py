@@ -15,14 +15,18 @@ from src.user.controller import create_admin_if_not_exists
 from src.review.router import review_routes
 from src.exceptions.handlers import register_exception_handlers
 from starlette.middleware.base import BaseHTTPMiddleware
-
+from src.utils.redis import redis_client
 from src.utils.logger import LoggingMiddleware
 
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    redis_client.ping()
+    print("Redis Connected Successfully")
+
     create_admin_if_not_exists()
+
     yield
 
 
@@ -72,3 +76,17 @@ async def root():
 @app.get("/health", tags=["System"], summary="Health check")
 async def health():
     return {"status": "healthy"}
+
+from src.utils.redis import redis_client
+
+
+@app.get("/redis-test")
+async def redis_test():
+
+    redis_client.set("hello", "world")
+
+    value = redis_client.get("hello")
+
+    return {
+        "redis": value
+    }

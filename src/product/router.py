@@ -27,7 +27,6 @@ product_routes = APIRouter(
 
 @product_routes.post(
     "",
-    response_model=ProductResponseSchema,
     status_code=status.HTTP_201_CREATED,
     summary="Create Product"
 )

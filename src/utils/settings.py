@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     ADMIN_USERNAME: str
     ADMIN_EMAIL: str
     ADMIN_PASSWORD: str
+    REDIS_URL: str
 
     model_config=SettingsConfigDict(env_file=".env",extra="ignore")
 
