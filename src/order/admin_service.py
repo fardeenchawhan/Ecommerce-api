@@ -7,6 +7,8 @@ from src.order.ditos import UpdateOrderStatusSchema
 from src.order.models import OrderItemModel, OrderModel
 from src.user.models import Usermodel
 from src.order.service import cancel_order
+from src.notification import service as notification_service
+from fastapi import BackgroundTasks
 
 
 
@@ -122,6 +124,7 @@ def update_order_status(
     body: UpdateOrderStatusSchema,
     db: Session,
     current_user: Usermodel,
+    background_tasks:BackgroundTasks
 ):
     if not current_user.is_admin:
         raise HTTPException(
@@ -188,5 +191,13 @@ def update_order_status(
 
     db.commit()
     db.refresh(order)
+
+    notification_service.send_order_status_email(
+    background_tasks,
+    order.user.email,
+    order.user.name,
+    order.id,
+    order.status.value,
+)
 
     return order

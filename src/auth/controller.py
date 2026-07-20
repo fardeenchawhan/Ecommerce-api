@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,UTC
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,6 +8,9 @@ from pwdlib import PasswordHash
 from src.auth.ditos import RegisterSchema, LoginSchema
 from src.user.models import Usermodel
 from src.utils.settings import settings
+from fastapi import BackgroundTasks
+from src.notification import service as notification_service 
+
 
 
 password_hash = PasswordHash.recommended()
@@ -22,7 +25,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(user_id: int) -> str:
-    expire = datetime.utcnow() + timedelta(minutes=settings.EXPIRY_TIME)
+    expire = datetime.now(UTC) + timedelta(minutes=settings.EXPIRY_TIME)
     payload = {
         "id": user_id,
         "exp": expire
@@ -31,7 +34,7 @@ def create_access_token(user_id: int) -> str:
     return token
 
 
-def register_user(body: RegisterSchema, db: Session):
+def register_user(body: RegisterSchema, db: Session, background_tasks:BackgroundTasks):
     existing_user = db.execute(
         select(Usermodel).where(Usermodel.username == body.username)
     ).scalar_one_or_none()
@@ -63,6 +66,13 @@ def register_user(body: RegisterSchema, db: Session):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    notification_service.send_welcome_email(
+        background_tasks=background_tasks,
+        email=new_user.email,
+        name=new_user.name
+    )
+
 
     return new_user
 

@@ -7,7 +7,7 @@ from src.user.ditos import UserResponseSchema
 from src.auth import controller
 from src.utils.db import get_db
 from fastapi import BackgroundTasks
-from src.email.service import send_email
+from src.notification import service as notification_service 
 from src.email.templates import welcome_email_template
 
 
@@ -25,13 +25,7 @@ auth_routes = APIRouter(
     summary="Register a new user"
 )
 async def register(body: RegisterSchema,background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    user= controller.register_user(body, db)
-    background_tasks.add_task(
-    send_email,
-    to_email=user.email,
-    subject="Welcome to Ecommerce API",
-    html=welcome_email_template(user.name),
-    )
+    user= controller.register_user(body, db ,background_tasks)
     return user
 
 

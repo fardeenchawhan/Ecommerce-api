@@ -4,6 +4,10 @@ from sib_api_v3_sdk.rest import ApiException
 
 from src.utils.settings import settings
 from src.utils.logger import logger
+from src.email.templates import (
+    welcome_email_template,
+    order_confirmation_template,
+)
 
 configuration = sib_api_v3_sdk.Configuration()
 
@@ -53,3 +57,4 @@ def send_email(
         )
 
         return None
+    

@@ -23,7 +23,6 @@ from src.utils.logger import LoggingMiddleware
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     redis_client.ping()
-    print("Redis Connected Successfully")
 
     create_admin_if_not_exists()
 

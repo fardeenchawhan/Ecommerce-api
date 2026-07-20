@@ -15,6 +15,8 @@ from src.user.models import Usermodel
 from src.utils.db import get_db
 from src.utils.helpers import get_current_user
 from src.order import admin_service
+from fastapi import BackgroundTasks
+
 
 
 order_routes = APIRouter(
@@ -31,10 +33,11 @@ order_routes = APIRouter(
     description="Create an order from the current user's cart.",
 )
 async def checkout(
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Usermodel = Depends(get_current_user),
 ):
-    return controller.checkout(db, current_user)
+    return controller.checkout(db, current_user,background_tasks)
 
 
 
@@ -149,6 +152,7 @@ async def get_all_orders(
 )
 async def update_order_status(
     order_id: int,
+    background_tasks:BackgroundTasks,
     body: UpdateOrderStatusSchema,
     db: Session = Depends(get_db),
     current_user: Usermodel = Depends(get_current_admin),
@@ -158,6 +162,7 @@ async def update_order_status(
         body,
         db,
         current_user,
+        background_tasks
     )
 
 

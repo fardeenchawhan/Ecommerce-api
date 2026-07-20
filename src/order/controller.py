@@ -11,9 +11,11 @@ from src.order.models import OrderItemModel, OrderModel
 from src.product.models import ProductModel
 from src.user.models import Usermodel
 from src.order.service import cancel_order
+from fastapi import BackgroundTasks
+from src.notification import service as notification_service
 
 
-def checkout(db: Session, current_user: Usermodel):
+def checkout(db: Session, current_user: Usermodel, background_tasks: BackgroundTasks):
     cart_items = (
         db.execute(
             select(CartItemModel)
@@ -95,6 +97,15 @@ def checkout(db: Session, current_user: Usermodel):
         db.delete(cart_item)
 
     db.commit()
+    db.refresh(order)
+
+    notification_service.send_order_confirmation_email(
+        background_tasks=background_tasks,
+        email=current_user.email,
+        name=current_user.name,
+        order_id=order.id,
+        total=order.total_amount,
+    )
 
     return (
         db.execute(

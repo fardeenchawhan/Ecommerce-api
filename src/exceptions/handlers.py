@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime,UTC
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -21,7 +21,7 @@ def error_response(
             "status": status_code,
             "message": message,
             "path": request.url.path,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp":datetime.now(UTC).isoformat(),
         },
     )
 
