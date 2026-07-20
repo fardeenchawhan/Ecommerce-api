@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select ,func
 from sqlalchemy.orm import Session, selectinload
-
+from sqlalchemy import or_ , and_
 from src.product.models import ProductModel
 from src.utils.pagination import paginate
 from src.product.helper import generate_sku
@@ -70,6 +70,7 @@ def get_all_products(
     page: int = 1,
     limit: int = 10,
     category_id: int | None = None,
+    brand: str | None = None,
     search: str | None = None,
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
@@ -82,6 +83,7 @@ def get_all_products(
     f"{page}:"
     f"{limit}:"
     f"{category_id}:"
+    f"{brand}:"
     f"{search}:"
     f"{min_price}:"
     f"{max_price}:"
@@ -107,10 +109,26 @@ def get_all_products(
             ProductModel.category_id == category_id
         )
 
-    if search:
+    if brand:
         query = query.where(
-            ProductModel.name.ilike(f"%{search}%")
+            ProductModel.brand.ilike(f"%{brand}%")
         )
+
+    if search:
+        words = search.split()
+
+        conditions = []
+
+        for word in words:
+            conditions.append(
+                or_(
+                    ProductModel.name.ilike(f"%{word}%"),
+                    ProductModel.description.ilike(f"%{word}%"),
+                    ProductModel.brand.ilike(f"%{word}%"),
+                )
+            )
+
+        query = query.where(and_(*conditions))
 
     if min_price is not None:
         query = query.where(
