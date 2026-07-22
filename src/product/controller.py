@@ -115,16 +115,19 @@ def get_all_products(
         )
 
     if search:
+
         words = search.split()
 
         conditions = []
 
         for word in words:
+
             conditions.append(
                 or_(
                     ProductModel.name.ilike(f"%{word}%"),
                     ProductModel.description.ilike(f"%{word}%"),
                     ProductModel.brand.ilike(f"%{word}%"),
+                    ProductModel.tags.ilike(f"%{word}%"),
                 )
             )
 

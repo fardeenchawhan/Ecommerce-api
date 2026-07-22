@@ -15,6 +15,7 @@ class ProductModel(Base):
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2),nullable=False)
     stock: Mapped[int] = mapped_column(default=0)
     brand: Mapped[Optional[str]] = mapped_column(String(100),nullable=True,index=True)
+    tags: Mapped[Optional[str]] = mapped_column(Text,nullable=True)
 
     sku: Mapped[str] = mapped_column(String(100),unique=True,nullable=False,index=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

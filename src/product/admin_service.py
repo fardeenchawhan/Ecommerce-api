@@ -9,24 +9,54 @@ from src.product.models import ProductModel
 from src.user.models import Usermodel
 from src.utils.logger import logger
 from src.cache.service import delete_pattern
-
+from src.ai.product_ai import generate_product_metadata
+from sqlalchemy.exc import SQLAlchemyError
 
 def create_product(
     body: ProductCreateSchema,
     db: Session,
     current_user: Usermodel,
 ):
-    category = db.get(CategoryModel, body.category_id)
+    
+    # -----------------------------
+    # Duplication check
+    # -----------------------------
+    
+    normalized_name = body.name.strip().lower()
+    normalized_brand = (body.brand or "").strip().lower()
 
-    if not category:
+
+    existing = (
+    db.execute(
+        select(ProductModel.id).where(
+            func.lower(ProductModel.name) == normalized_name,
+            func.lower(ProductModel.brand) == normalized_brand,
+        ).limit(1)
+    )
+    .scalar()
+)
+
+    if existing:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found.",
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Product already exists."
         )
+    # -----------------------------
+    # Generate AI Metadata
+    # -----------------------------
+    metadata = generate_product_metadata(
+        db=db,
+        name=body.name,
+        description=body.description or "",
+        brand=body.brand,
+    )
 
+    # -----------------------------
+    # Generate Unique SKU
+    # -----------------------------
     while True:
         sku = generate_sku(
-            category_name=category.name,
+            category_name=metadata.category,
             brand=body.brand or "GENERIC",
         )
 
@@ -39,24 +69,38 @@ def create_product(
             .scalar_one_or_none()
         )
 
-        if not existing_sku:
+        if existing_sku is None:
             break
 
+    # -----------------------------
+    # Prepare Product Data
+    # -----------------------------
     data = body.model_dump()
 
+    data["category_id"] = metadata.category_id
+    data["tags"] = ",".join(metadata.tags)
 
+    # -----------------------------
+    # Create Product
+    # -----------------------------
     product = ProductModel(
         **data,
         sku=sku,
     )
 
+
     db.add(product)
     db.commit()
     db.refresh(product)
 
+    # -----------------------------
+    # Clear Product Cache
+    # -----------------------------
     delete_pattern("products:*")
 
-    logger.info( f"Admin {current_user.id} created product {product.id}" )
+    logger.info(
+        f"Admin {current_user.id} created product {product.id}"
+    )
 
     return product
 

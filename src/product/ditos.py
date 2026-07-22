@@ -46,14 +46,8 @@ class ProductCreateSchema(BaseModel):
     default=None,
     max_length=500,
     description="Product image URL",
-)
-
-    category_id: int = Field(
-        ...,
-        gt=0,
-        examples=[1],
-        description="Category ID",
     )
+
 
     brand: str | None = Field(
         default=None,
@@ -183,6 +177,7 @@ class ProductResponseSchema(BaseModel):
         default=None,
         description="Product brand",
     )
+
 
     sku: str = Field(
         ...,

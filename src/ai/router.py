@@ -16,3 +16,7 @@ async def ai_search(
     db: Session = Depends(get_db)
 ):
     return controller.ai_search(q,db)
+
+
+
+

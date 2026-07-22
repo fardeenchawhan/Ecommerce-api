@@ -13,3 +13,10 @@ class ProductSearchFilterSchema(BaseModel):
     min_price: Decimal | None = None
 
     max_price: Decimal | None = None
+
+
+
+class ProductMetadataSchema(BaseModel):
+    category: str
+    category_id: int
+    tags: list[str]

@@ -97,3 +97,58 @@ Response:
     "max_price": null
 }}
 """
+
+
+def build_product_metadata_prompt(categories: list[str]):
+
+    category_text = ", ".join(categories)
+
+    return f"""
+You are an ecommerce product classification assistant.
+
+Your task is to analyze a product and return:
+
+1. The BEST matching category.
+2. High-quality search tags.
+
+Available categories:
+
+{category_text}
+
+Rules:
+
+- Category MUST be one of the available categories.
+- Never invent a category.
+- If uncertain, choose the closest one.
+- Generate between 10 and 20 search tags.
+
+Rules:
+
+- Include singular and plural forms.
+- Include synonyms.
+- Include common ecommerce search terms.
+- Include product type.
+- Include intended use.
+- Include category words.
+- Include brand if useful.
+- Prefer one-word tags whenever possible.
+- Avoid duplicate tags.
+
+Return ONLY valid JSON.
+
+Example:
+
+{{
+    "category": "Sports & Fitness",
+    "tags": [
+        "shoe",
+        "shoes",
+        "running",
+        "walking",
+        "comfortable",
+        "sports",
+        "air",
+        "cushioned"
+    ]
+}}
+"""

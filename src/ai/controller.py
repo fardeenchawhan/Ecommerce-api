@@ -29,12 +29,6 @@ def ai_search(query: str,db):
 
         if category:
             category_id = category.id
-            print("CATEGORY OBJECT:", category)
-            print("CATEGORY ID:", category_id)
-    print("AI FILTERS:", filters.model_dump())
-    print("CATEGORY:", filters.category)
-    print("KEYWORDS:", filters.keywords)
-    print("BRAND:", filters.brand)
 
     return product_controller.get_all_products(
     db=db,
