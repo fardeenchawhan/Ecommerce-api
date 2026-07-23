@@ -28,7 +28,8 @@ product_routes = APIRouter(
 @product_routes.post(
     "",
     status_code=status.HTTP_201_CREATED,
-    summary="Create Product"
+    summary="Create Product",
+description="Creates a new product. Admin only."
 )
 async def create_product(
 
@@ -49,7 +50,17 @@ async def create_product(
 @product_routes.get(
     "",
     response_model=PaginatedResponse[ProductResponseSchema],
-    summary="Get all products"
+     response_model_exclude={
+        "items": {
+            "__all__": {
+                "stock",
+                "sku",
+                "is_active",
+            }
+        }
+    },
+    summary="Browse Products",
+description="Returns paginated products with filtering, searching, and sorting."
 )
 async def get_all_products(
     page: int = Query(1, ge=1),
@@ -82,7 +93,12 @@ async def get_all_products(
 @product_routes.get(
     "/{product_id}",
     response_model=ProductResponseSchema,
-    summary="Get One Product"
+    response_model_exclude={
+        "stock",
+        "is_active",
+    },
+    summary="Get Product",
+description="Returns detailed information about a specific product."
 )
 async def get_one_product(
     product_id: int,
@@ -95,7 +111,8 @@ async def get_one_product(
 @product_routes.put(
     "/{product_id}",
     response_model=ProductResponseSchema,
-    summary="Update Product"
+    summary="Update Product",
+description="Updates an existing product. Admin only."
 )
 async def update_product(
 
@@ -120,7 +137,8 @@ async def update_product(
 @product_routes.delete(
     "/{product_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete Product"
+    summary="Delete Product",
+description="Deletes a product. Admin only."
 )
 async def delete_product(
 
@@ -143,6 +161,7 @@ async def delete_product(
     "/admin/low-stock",
     response_model=List[LowStockProductSchema],
     summary="Low Stock Products",
+description="Returns products with low inventory. Admin only."
 )
 async def get_low_stock_products(
     threshold: int = Query(
@@ -163,6 +182,7 @@ async def get_low_stock_products(
     "/admin/statistics",
     response_model=ProductStatisticsSchema,
     summary="Product Statistics",
+description="Returns product inventory statistics. Admin only."
 )
 async def get_product_statistics(
     threshold: int = Query(

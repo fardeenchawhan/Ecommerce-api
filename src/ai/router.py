@@ -12,7 +12,12 @@ ai_router = APIRouter(
 )
 
 
-@ai_router.get("/search",response_model=PaginatedResponse[ProductResponseSchema])
+@ai_router.get(
+        "/search",
+        response_model=PaginatedResponse[ProductResponseSchema],
+        summary="AI Product Search",
+        description="Performs natural language product search using AI-powered query understanding."
+        )
 async def ai_search(
     q: str,
     db: Session = Depends(get_db)

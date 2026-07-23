@@ -22,7 +22,8 @@ auth_routes = APIRouter(
     "/register",
     response_model=UserResponseSchema,
     status_code=status.HTTP_201_CREATED,
-    summary="Register a new user"
+    summary="Register User",
+    description="Creates a new user account."
 )
 async def register(body: RegisterSchema,background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     user= controller.register_user(body, db ,background_tasks)
@@ -33,7 +34,8 @@ async def register(body: RegisterSchema,background_tasks: BackgroundTasks, db: S
     "/login",
     response_model=TokenResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Login user"
+    summary="User Login",
+    description="Authenticates a user and returns a JWT access token."
 )
 async def login(body: LoginSchema, db: Session = Depends(get_db)):
     return controller.login_user(body, db)

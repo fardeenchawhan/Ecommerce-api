@@ -23,8 +23,8 @@ user_routes = APIRouter(
     "/me",
     response_model=UserResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Get current user",
-    description="Get the currently authenticated user's profile.",
+    summary="Get Current User",
+    description="Returns the authenticated user's profile.",
 )
 async def get_me(
     current_user: Usermodel = Depends(get_current_user),
@@ -36,8 +36,8 @@ async def get_me(
     "/me",
     response_model=UserResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Update profile",
-    description="Update the current user's profile.",
+    summary="Update Profile",
+    description="Updates the authenticated user's profile information.",
 )
 async def update_profile(
     body: UpdateProfileSchema,
@@ -55,8 +55,8 @@ async def update_profile(
     "/change-password",
     response_model=MessageResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Change password",
-    description="Change the current user's password.",
+    summary="Change Password",
+    description="Changes the authenticated user's password.",
 )
 async def change_password(
     body: ChangePasswordSchema,

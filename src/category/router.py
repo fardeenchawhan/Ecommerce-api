@@ -24,8 +24,8 @@ category_routes = APIRouter(
     "",
     response_model=CategoryResponseSchema,
     status_code=status.HTTP_201_CREATED,
-    summary="Create category",
-    description="Create a new category (admin only)."
+    summary="Create Category",
+    description="Creates a new product category. Admin only."
 )
 async def create_category(
     body: CategoryCreateSchema,
@@ -40,8 +40,8 @@ async def create_category(
     "",
     response_model=List[CategoryResponseSchema],
     status_code=status.HTTP_200_OK,
-    summary="Get all categories",
-    description="Get all categories."
+    summary="Get Categories",
+    description="Returns all available product categories."
 )
 async def get_all_categories(
     db: Session = Depends(get_db),
@@ -54,8 +54,8 @@ async def get_all_categories(
     "/{category_id}",
     response_model=CategoryResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Get one category",
-    description="Get one category by id."
+    summary="Get Category",
+    description="Returns details of a specific category."
 )
 async def get_one_category(
     category_id: int,
@@ -68,8 +68,8 @@ async def get_one_category(
     "/{category_id}",
     response_model=CategoryResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Update category",
-    description="Update category by id (admin only)."
+    summary="Update Category",
+    description="Updates an existing category. Admin only."
 )
 async def update_category(
     category_id: int,
@@ -84,8 +84,8 @@ async def update_category(
 @category_routes.delete(
     "/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete category",
-    description="Delete category by id (admin only)."
+    summary="Delete Category",
+    description="Deletes a category. Admin only."
 )
 async def delete_category(
     category_id: int,

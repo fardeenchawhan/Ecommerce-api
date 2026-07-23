@@ -5,11 +5,21 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.product.ditos import ProductResponseSchema
 from src.order.enums import OrderStatus
-
+from src.category.ditos import CategorySimpleResponseSchema
 
 # -------------------------
 # Order Item Response
 # -------------------------
+class ProductMiniResponseSchema(BaseModel):
+    id: int
+    name: str
+    image_url: str | None
+    price: Decimal
+    brand: str | None
+    category: CategorySimpleResponseSchema
+
+    model_config = ConfigDict(from_attributes=True) 
+
 
 class OrderItemResponseSchema(BaseModel):
     id: int = Field(
@@ -33,7 +43,7 @@ class OrderItemResponseSchema(BaseModel):
         description="Price of a single unit at purchase time",
     )
 
-    product: ProductResponseSchema
+    product: ProductMiniResponseSchema
 
     model_config = ConfigDict(from_attributes=True)
 

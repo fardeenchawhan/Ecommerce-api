@@ -78,20 +78,8 @@ async def get_my_order(
     "/admin/all",
     response_model=List[OrderResponseSchema],
     status_code=status.HTTP_200_OK,
-    summary="Admin - Get all orders",
-    description="""
-Search, filter and paginate all orders.
-
-Supports:
-
-- Pagination
-- Search by username
-- Search by name
-- Search by email
-- Filter by status
-- Filter by start date
-- Filter by end date
-""",
+    summary="All Orders",
+    description="Returns all customer orders. Admin only."
 )
 async def get_all_orders(
     skip: int = Query(
@@ -147,8 +135,8 @@ async def get_all_orders(
     "/{order_id}/status",
     response_model=OrderResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Update order status",
-    description="Admin: Update order status.",
+    summary="Update Order Status",
+    description="Updates the status of an order. Admin only."
 )
 async def update_order_status(
     order_id: int,
@@ -171,7 +159,8 @@ async def update_order_status(
     "/{order_id}/cancel",
     response_model=OrderResponseSchema,
     status_code=status.HTTP_200_OK,
-    summary="Cancel my order",
+    summary="Cancel Order",
+description="Cancels one of the authenticated user's pending or confirmed orders."
 )
 async def cancel_my_order(
     order_id: int,

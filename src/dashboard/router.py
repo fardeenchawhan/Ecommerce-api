@@ -17,6 +17,7 @@ dashboard_routes = APIRouter(
     "",
     response_model=DashboardResponseSchema,
     summary="Admin Dashboard",
+    description="Returns sales, users, products, and order statistics. Admin only.",
 )
 async def dashboard(
     db: Session = Depends(get_db),

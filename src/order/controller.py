@@ -3,10 +3,9 @@ from decimal import Decimal
 from fastapi import HTTPException, status
 from sqlalchemy import select,or_
 from sqlalchemy.orm import Session, joinedload
-from src.order.enums import OrderStatus, OrderSort
+from src.order.enums import OrderStatus, PaymentStatus
 from datetime import datetime, timedelta
 from src.cart.models import CartItemModel
-from src.order.ditos import UpdateOrderStatusSchema
 from src.order.models import OrderItemModel, OrderModel
 from src.product.models import ProductModel
 from src.user.models import Usermodel
@@ -194,6 +193,12 @@ def cancel_my_order(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found."
+        )
+
+    if order.payment_status == PaymentStatus.PAID:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Paid orders must be refunded before cancellation."
         )
 
     return cancel_order(order, db)

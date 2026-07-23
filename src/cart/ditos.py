@@ -3,7 +3,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.product.ditos import ProductResponseSchema
-
+from src.order.ditos import ProductMiniResponseSchema
 
 # -------------------------
 # Request Schemas
@@ -50,7 +50,7 @@ class CartItemResponseSchema(BaseModel):
         description="Quantity of this product",
     )
 
-    product: ProductResponseSchema
+    product: ProductMiniResponseSchema
 
     subtotal: Decimal = Field(
         ...,

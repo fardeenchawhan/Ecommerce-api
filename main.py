@@ -20,6 +20,44 @@ from src.utils.logger import LoggingMiddleware
 from src.payment.router import payment_router
 
 
+tags_metadata = [
+    {
+        "name": "Authentication",
+        "description": "User registration and authentication.",
+    },
+    {
+        "name": "Users",
+        "description": "User profile management.",
+    },
+    {
+        "name": "Categories",
+        "description": "Product categories.",
+    },
+    {
+        "name": "Products",
+        "description": "Browse and manage products.",
+    },
+    {
+        "name": "Cart",
+        "description": "Shopping cart operations.",
+    },
+    {
+        "name": "Orders",
+        "description": "Order management.",
+    },
+    {
+        "name": "Payments",
+        "description": "Razorpay payment integration.",
+    },
+    {
+        "name": "Reviews",
+        "description": "Product reviews and ratings.",
+    },
+    {
+        "name": "AI",
+        "description": "AI-powered search and metadata generation.",
+    },
+]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,16 +70,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="E-Commerce API",
-    description="""
-    A FastAPI-based E-Commerce backend with:
-
-    - JWT Authentication
-    - User Management
-    - Category Management
-    - Product Management
-    - Cart Management
-    - Order Management
-    """,
+    description="Production-ready FastAPI backend for an E-commerce platform.",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -64,7 +93,12 @@ app.include_router(review_routes)
 app.include_router(ai_router)
 app.include_router(payment_router)
 
-@app.get("/", tags=["System"], summary="API Information")
+@app.get(
+        "/",
+        tags=["System"],
+        summary="API Information",
+        description="Returns basic information about the E-commerce API."
+        )
 async def root():
     return {
         "message": "E-Commerce API is running",
@@ -74,14 +108,23 @@ async def root():
     }
 
 
-@app.get("/health", tags=["System"], summary="Health check")
+@app.get(
+        "/health",
+        tags=["System"], 
+        summary="Health Check",
+        description="Returns the application's health status."
+)
 async def health():
     return {"status": "healthy"}
 
 from src.utils.redis import redis_client
 
 
-@app.get("/redis-test")
+@app.get(
+        "/redis-test",
+        summary="Redis Test",
+        description="Tests the Redis connection."
+        )
 async def redis_test():
 
     redis_client.set("hello", "world")
