@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from src.utils.db import Base, engine
 
 # import models so tables are registered
 from src.dashboard.router import dashboard_routes
@@ -18,6 +17,7 @@ from src.exceptions.handlers import register_exception_handlers
 from starlette.middleware.base import BaseHTTPMiddleware
 from src.utils.redis import redis_client
 from src.utils.logger import LoggingMiddleware
+from src.payment.router import payment_router
 
 
 
@@ -62,7 +62,7 @@ app.include_router(cart_routes)
 app.include_router(order_routes)
 app.include_router(review_routes)
 app.include_router(ai_router)
-
+app.include_router(payment_router)
 
 @app.get("/", tags=["System"], summary="API Information")
 async def root():

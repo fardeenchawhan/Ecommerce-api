@@ -3,6 +3,8 @@ from fastapi import APIRouter,Depends
 from src.ai import controller
 from src.utils.db import get_db
 from sqlalchemy.orm import Session
+from src.product.ditos import ProductResponseSchema
+from src.utils.schemas import PaginatedResponse
 
 ai_router = APIRouter(
     prefix="/ai",
@@ -10,7 +12,7 @@ ai_router = APIRouter(
 )
 
 
-@ai_router.get("/search")
+@ai_router.get("/search",response_model=PaginatedResponse[ProductResponseSchema])
 async def ai_search(
     q: str,
     db: Session = Depends(get_db)

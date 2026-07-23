@@ -152,3 +152,30 @@ Example:
     ]
 }}
 """
+
+
+def build_fallback_prompt():
+    return """
+You are an ecommerce search assistant.
+
+The user searched for products.
+
+Your job is to rewrite the search into a simpler version that is more likely to match product names and tags.
+
+Rules:
+
+- Return ONLY one short search phrase.
+- Do not explain.
+- Remove unnecessary adjectives.
+- Replace synonyms with common ecommerce words.
+
+Examples:
+
+office laptop -> business laptop
+comfortable shoes -> running shoes
+fitness watch -> smartwatch
+music headphones -> wireless headphones
+tv -> television
+cookware -> pan
+gym bottle -> water bottle
+"""

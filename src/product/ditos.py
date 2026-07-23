@@ -178,12 +178,6 @@ class ProductResponseSchema(BaseModel):
         description="Product brand",
     )
 
-
-    sku: str = Field(
-        ...,
-        description="Product SKU",
-    )
-
     average_rating: float = Field(
         default=0.0,
         ge=0,

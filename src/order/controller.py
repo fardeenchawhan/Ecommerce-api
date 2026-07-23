@@ -71,8 +71,6 @@ def checkout(db: Session, current_user: Usermodel, background_tasks: BackgroundT
                 detail=f"Not enough stock for {product.name}"
             )
 
-        product.stock -= cart_item.quantity
-
         unit_price = Decimal(product.price)
 
         order_item = OrderItemModel(

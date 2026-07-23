@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from src.order.enums import OrderStatus
-
+from sqlalchemy import Enum
 from sqlalchemy import (
     String,
     ForeignKey,
@@ -11,6 +11,7 @@ from sqlalchemy import (
     func
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.order.enums import PaymentStatus
 
 from src.utils.db import Base
 
@@ -73,6 +74,22 @@ class OrderModel(Base):
         "OrderItemModel",
         back_populates="order",
         cascade="all, delete-orphan",
+    )
+
+    payment_status: Mapped[PaymentStatus] = mapped_column(
+    Enum(PaymentStatus),
+    default=PaymentStatus.PENDING,
+    nullable=False,
+    )
+
+    razorpay_order_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    razorpay_payment_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
     )
 
 

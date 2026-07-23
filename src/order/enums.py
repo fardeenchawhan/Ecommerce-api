@@ -1,6 +1,6 @@
 from enum import Enum
 
-
+import enum
 class OrderStatus(str, Enum):
     PENDING = "PENDING"
     CONFIRMED = "CONFIRMED"
@@ -14,3 +14,9 @@ class OrderSort(str, Enum):
     OLDEST = "oldest"
     HIGHEST = "highest"
     LOWEST = "lowest"
+
+class PaymentStatus(str,enum.Enum):
+    PENDING = "PENDING"
+    PAID = "PAID"
+    FAILED = "FAILED"
+    REFUNDED = "REFUNDED"

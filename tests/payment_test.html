@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Razorpay Test</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+
+<body>
+
+<h2>Razorpay Backend Test</h2>
+
+<button onclick="pay()">Pay Now</button>
+
+<script>
+
+async function pay() {
+
+    // CHANGE THIS TO AN EXISTING PENDING ORDER
+    const ORDER_ID = 17;
+
+    const response = await fetch(
+        `http://127.0.0.1:8000/payments/create/${ORDER_ID}`,
+        {
+            method: "POST"
+        }
+    );
+
+    const data = await response.json();
+
+    console.log("Create Payment:", data);
+
+    const options = {
+
+        key: data.key_id,
+
+        amount: data.amount,
+
+        currency: data.currency,
+
+        order_id: data.razorpay_order_id,
+
+        name: "Ecommerce API",
+
+        description: "Backend Payment Test",
+
+        handler: async function (response) {
+
+            console.log("Razorpay Response:", response);
+
+            const verify = await fetch(
+                "http://127.0.0.1:8000/payments/verify",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature
+                    })
+                }
+            );
+
+            const result = await verify.json();
+
+            console.log(result);
+
+            alert(JSON.stringify(result));
+
+        }
+
+    };
+
+    const rzp = new Razorpay(options);
+
+    rzp.open();
+
+}
+
+</script>
+
+</body>
+
+</html>
