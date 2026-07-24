@@ -1,0 +1,25 @@
+# Shell scripts must always use LF
+*.sh text eol=lf
+
+# Python source files
+*.py text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# Markdown
+*.md text eol=lf
+
+# Environment files
+*.env text eol=lf
+
+# Windows batch files
+*.bat text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
