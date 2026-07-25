@@ -4,6 +4,18 @@ A **production-ready E-Commerce REST API** built with **FastAPI**, featuring aut
 
 ---
 
+## 🌐 Live Demo
+
+**API Base URL**
+
+https://ecommerce-api-zwzs.onrender.com
+
+**Swagger Documentation**
+
+https://ecommerce-api-zwzs.onrender.com/docs
+
+---
+
 # 📸 Screenshots
 
 ## Swagger UI
@@ -211,6 +223,9 @@ Using **Brevo API**
 
 * Docker
 * Docker Compose
+* Render
+* Neon PostgreSQL
+* Upstash Redis
 * Uvicorn
 
 ---
@@ -329,6 +344,17 @@ docker compose down -v
 ```
 
 ---
+
+# ☁️ Production Deployment
+
+The API is deployed using a modern cloud-native stack.
+
+- Render (Application Hosting)
+- Neon (PostgreSQL Database)
+- Upstash (Redis Cache)
+- Docker
+- Alembic Automatic Database Migrations
+
 
 # ⚙️ Environment Variables
 
