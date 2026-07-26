@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+import os
 # import models so tables are registered
 from src.dashboard.router import dashboard_routes
 # routers
@@ -63,7 +63,8 @@ tags_metadata = [
 async def lifespan(app: FastAPI):
     redis_client.ping()
 
-    create_admin_if_not_exists()
+    if os.getenv("TESTING") != "1":
+        create_admin_if_not_exists()
 
     yield
 
