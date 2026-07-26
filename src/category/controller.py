@@ -32,6 +32,7 @@ def create_category(
     db.add(new_category)
     db.commit()
     db.refresh(new_category)
+    new_category.product_count = 0
 
     delete_pattern("products:*")
     delete_pattern("categories*")
