@@ -471,12 +471,41 @@ http://localhost:8000/docs
 
 # 🧪 Testing
 
-Future improvements include
+The project includes automated API tests built with **Pytest**.
 
-* Unit Tests
-* Integration Tests
-* API Tests
-* Payment Tests
+### Covered Modules
+
+- Authentication
+- Categories
+- Products
+- Cart
+- Reviews
+- Orders
+- Payments
+
+### Run Tests
+
+```bash
+pytest
+```
+
+Run with verbose output:
+
+```bash
+pytest -v
+```
+
+The test suite covers:
+
+- Authentication & Authorization
+- Product CRUD
+- Category CRUD
+- Cart Operations
+- Review Management
+- Order Checkout & Cancellation
+- Razorpay Payment Flow
+- Refund Processing
+- Admin APIs
 
 ---
 
