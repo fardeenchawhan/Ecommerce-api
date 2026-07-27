@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "README.md"
+      - ".gitignore"
+      - "LICENSE"
 
   pull_request:
     branches:
@@ -94,6 +98,7 @@ jobs:
         run: docker build -t ecommerce-api .
       
       - name: Deploy to Render
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           curl "$RENDER_DEPLOY_HOOK"
         env:

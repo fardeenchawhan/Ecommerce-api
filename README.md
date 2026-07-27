@@ -363,21 +363,26 @@ The API is deployed using a modern cloud-native stack.
 - GitHub Actions (CI/CD)
 - Automatic Deployment to Render
 - Automatic Alembic Database Migrations
+---
 
 # 🔄 CI/CD
 
 This project uses GitHub Actions for Continuous Integration and Continuous Deployment.
 
-Pipeline steps:
+### Pull Requests
 
 - Checkout repository
-- Set up Python
 - Install dependencies
 - Run Alembic migrations
 - Execute automated API tests
 - Build Docker image
+
+### Push to Main
+
+- Execute all CI steps
 - Automatically deploy to Render
 
+---
 
 # ⚙️ Environment Variables
 
