@@ -235,6 +235,10 @@ Using **Brevo API**
 ```
 ecommerce-api/
 │
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
 ├── alembic/
 │
 ├── src/
@@ -253,6 +257,8 @@ ecommerce-api/
 │   ├── review/
 │   ├── user/
 │   └── utils/
+│
+├── tests/
 │
 ├── images/
 │   ├── swagger-ui.png
@@ -350,10 +356,27 @@ docker compose down -v
 The API is deployed using a modern cloud-native stack.
 
 - Render (Application Hosting)
-- Neon (PostgreSQL Database)
-- Upstash (Redis Cache)
+- Neon PostgreSQL (Database)
+- Upstash Redis (Caching)
 - Docker
-- Alembic Automatic Database Migrations
+- Docker Compose
+- GitHub Actions (CI/CD)
+- Automatic Deployment to Render
+- Automatic Alembic Database Migrations
+
+# 🔄 CI/CD
+
+This project uses GitHub Actions for Continuous Integration and Continuous Deployment.
+
+Pipeline steps:
+
+- Checkout repository
+- Set up Python
+- Install dependencies
+- Run Alembic migrations
+- Execute automated API tests
+- Build Docker image
+- Automatically deploy to Render
 
 
 # ⚙️ Environment Variables
@@ -482,6 +505,8 @@ The project includes automated API tests built with **Pytest**.
 - Reviews
 - Orders
 - Payments
+
+Tests run automatically on every push and pull request using GitHub Actions.
 
 ### Run Tests
 
